@@ -13,9 +13,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-
+    class func sharedinstance() -> AppDelegate {
+        
+        return UIApplication.shared.delegate as! AppDelegate
+    }
+    
+    class func getdefaultvalue() -> UserDefaults {
+        
+        return UserDefaults.standard
+    }
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        if let status = UIApplication.shared.value(forKey: "statusBar") as? UIView {
+            status.backgroundColor = COLOR_Cream
+        }
+
         return true
     }
 

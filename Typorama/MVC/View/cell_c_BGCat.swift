@@ -10,9 +10,14 @@ import UIKit
 
 class cell_c_BGCat: UICollectionViewCell {
 
+    @IBOutlet weak var lbl_Name: UILabel!
+    @IBOutlet weak var lbl_Line: UILabel!
+    
     override func awakeFromNib() {
-        super.awakeFromNib()
-        // Initialization code
+        super.awakeFromNib()        
+        
+        self.lbl_Name.font = UIFont(name: APPFONT_Bold, size: APPFONT_Size15)
+        self.lbl_Name.textColor = COLOR_White
     }
 
 }
