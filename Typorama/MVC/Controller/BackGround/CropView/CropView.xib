@@ -16,6 +16,7 @@
                 <outlet property="btn_Next" destination="d3M-Kn-p2V" id="lgG-Y5-MYI"/>
                 <outlet property="clc_Size" destination="STK-n3-ALF" id="VIR-qg-vMe"/>
                 <outlet property="contentView" destination="iN0-l3-epB" id="KqK-n9-rgP"/>
+                <outlet property="imgvw_Main" destination="9pE-Cq-h35" id="g61-Rs-V9j"/>
                 <outlet property="lbl_Creation" destination="5MG-oj-HoC" id="y61-I9-IJP"/>
                 <outlet property="vw_Canvas" destination="r72-zJ-P3P" id="Ocd-n5-0CQ"/>
             </connections>
@@ -97,8 +98,17 @@
                         </collectionView>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="r72-zJ-P3P">
                             <rect key="frame" x="10" y="50" width="394" height="394"/>
+                            <subviews>
+                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="9pE-Cq-h35">
+                                    <rect key="frame" x="0.0" y="0.0" width="394" height="394"/>
+                                </imageView>
+                            </subviews>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
+                                <constraint firstAttribute="trailing" secondItem="9pE-Cq-h35" secondAttribute="trailing" id="BYH-Et-bg8"/>
+                                <constraint firstItem="9pE-Cq-h35" firstAttribute="top" secondItem="r72-zJ-P3P" secondAttribute="top" id="EBD-uE-Hah"/>
+                                <constraint firstItem="9pE-Cq-h35" firstAttribute="leading" secondItem="r72-zJ-P3P" secondAttribute="leading" id="OYE-Ti-bdG"/>
+                                <constraint firstAttribute="bottom" secondItem="9pE-Cq-h35" secondAttribute="bottom" id="WPL-fi-Bpc"/>
                                 <constraint firstAttribute="width" secondItem="r72-zJ-P3P" secondAttribute="height" multiplier="1:1" id="gDK-FK-k3C"/>
                             </constraints>
                         </view>

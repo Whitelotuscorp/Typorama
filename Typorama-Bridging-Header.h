@@ -14,5 +14,6 @@
 #import "RSMaskedLabel.h"
 #import "UIImage+Utility.h"
 #import "UIImage+StackBlur.h"
+#import "MBProgressHUD.h"
 
 #endif /* Typorama_Bridging_Header_h */

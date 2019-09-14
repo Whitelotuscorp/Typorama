@@ -64,6 +64,7 @@ typedef NS_ENUM(NSUInteger, ZDStickerViewButton) {
 - (void)stickerViewDidEndEditing:(ZDStickerView *)sticker;
 - (void)stickerViewDidCancelEditing:(ZDStickerView *)sticker;
 - (void)stickerViewDidClose:(ZDStickerView *)sticker;
+- (void)stickerViewDidDoubleTapOnView:(ZDStickerView *)sticker;
 #ifdef ZDSTICKERVIEW_LONGPRESS
 - (void)stickerViewDidLongPressed:(ZDStickerView *)sticker;
 #endif

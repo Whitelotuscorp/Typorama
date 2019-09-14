@@ -9,6 +9,8 @@
 import Foundation
 import UIKit
 
+let AppName = "Typorama"
+
 let AppDelegateObj  = AppDelegate.sharedinstance()
 let AppDelegateGET  = AppDelegate.getdefaultvalue()
 let AppSingletonObj = AppSingleton.sharedInstance()

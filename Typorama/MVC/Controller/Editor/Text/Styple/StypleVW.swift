@@ -88,24 +88,8 @@ extension StypleVW: UICollectionViewDelegate, UICollectionViewDataSource, UIColl
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
-        let randomInt = self.randomNumber(last: self.muary_Layer[indexPath.row].index, count: self.muary_Layer[indexPath.row].effects.count)
-        self.muary_Layer[indexPath.row].index = randomInt
-        
-        let info_E : infoEffect = self.muary_Layer[indexPath.row].effects[randomInt]
-        let info_S = infoStyle.copyOne(effect: info_E, With: self.muary_Layer[indexPath.row])        
-        
-        self.delegate?.style?(view: self, didSelected: info_S)
-    }
-    
-    func randomNumber(last: Int, count: Int) -> Int {
-        
-        var randomInt = Int.random(in: 0 ..< count)
-        while last == randomInt {
-            
-            randomInt = Int.random(in: 0 ..< count)
-        }
-        return randomInt
+                
+        self.delegate?.style?(view: self, didSelected: self.muary_Layer[indexPath.row])
     }
 }
 

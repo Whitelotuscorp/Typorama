@@ -7,10 +7,10 @@
 //
 
 import UIKit
-@objc protocol CropViewDelegate: class {
+protocol CropViewDelegate: class {
     
-    @objc optional func crop(view: CropView, didCrop size: String)
-    @objc optional func crop(view: CropView, didCancel size: String)
+    func crop(view: CropView, didCrop size: String, With image: UIImage, type: ImageType)
+    func crop(view: CropView, didCancel size: String)
 }
 
 class CropView: UIView {
@@ -22,6 +22,8 @@ class CropView: UIView {
     
     @IBOutlet weak var clc_Size: UICollectionView!
     
+    @IBOutlet weak var imgvw_Main: UIImageView!
+    
     @IBOutlet weak var btn_Cancel: UIButton!
     @IBOutlet weak var btn_Next: UIButton!
     
@@ -29,7 +31,14 @@ class CropView: UIView {
     var sticker_Size: OTResizableView!
     
     @IBOutlet weak var lyl_w_Canvas: NSLayoutConstraint!
+    @IBOutlet weak var lyl_h_Canvas: NSLayoutConstraint!
+    
     var muary_Size = NSMutableArray()
+    
+    var typeBG = ImageType(rawValue: 0)
+    
+    var image: UIImage!
+    var color: UIColor!
     
     var index_Selected : IndexPath = IndexPath(item: 0, section: 0)
     
@@ -116,8 +125,13 @@ class CropView: UIView {
         self.sticker_Size.setResizedFrame(newFrame: CGRect(x: 0, y: 0, width: self.vw_Canvas.frame.width, height: self.vw_Canvas.frame.height))
     }
     
-    func showCropView(image: UIImage, With color: UIColor) {
+    func showCropView(image: UIImage, With color: UIColor, typeBG : ImageType) {
      
+        self.image = image
+        self.color = color
+        self.typeBG = typeBG
+        
+        self.imgvw_Main.image = image
         self.vw_Canvas.backgroundColor = color
         self.isHidden = false
     }
@@ -130,7 +144,7 @@ class CropView: UIView {
     @IBAction func action_Cancel(_ sender: Any) {
         
         self.hideCropView()
-        self.delegate?.crop?(view: self, didCancel: "")
+        self.delegate?.crop(view: self, didCancel: "")
     }
     
     @IBAction func action_Next(_ sender: Any) {
@@ -144,7 +158,7 @@ class CropView: UIView {
             
         }
         
-        self.delegate?.crop?(view: self, didCrop: size!)
+        self.delegate?.crop(view: self, didCrop: size!, With: self.image, type: self.typeBG!)
     }
 }
 

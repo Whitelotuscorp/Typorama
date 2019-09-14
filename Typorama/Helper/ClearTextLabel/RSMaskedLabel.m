@@ -78,6 +78,7 @@
         return;
     }
     
+    rect.origin.y += rect.size.height / 10;
     // Render into a temporary bitmap context at a max of 8 bits per component for subsequent CGImageMaskCreate operations
     UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0);
     
@@ -104,6 +105,7 @@
     CGContextClipToMask(context, rect, mask);
     
     if (self.layer.cornerRadius != 0.0f) {
+        
         CGPathRef path = CGPathCreateWithRoundedRect(rect, self.layer.cornerRadius, self.layer.cornerRadius, nil);
         CGContextAddPath(context, path);
         CGContextClip(context);

@@ -14,16 +14,20 @@ class infoLayer: NSObject {
 
     var style : infoStyle = infoStyle()
     
+    var text : String = ""
+    var fontFamily : String = "Bebas"
+    
+    var main : UIImage = UIImage()
     var image : UIImage = UIImage()
     
     var color : UIColor = .black
     
     var shadow : infoLayerShadow = infoLayerShadow(shadow: false)
 
-    init(color : UIColor = .black, style : infoStyle = infoStyle()) {
+    init(color : UIColor = .black, text : String = "") {
         
         self.color = color
-        self.style = style
+        self.text = text
     }
 }
 

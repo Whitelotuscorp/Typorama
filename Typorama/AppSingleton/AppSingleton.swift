@@ -233,8 +233,12 @@ class AppSingleton: NSObject {
         
         let gradient = CGGradient(colorsSpace: colorSpace, colors: colors, locations: locations)
         
-        let startPoint = CGPoint(x: img.size.width/2, y: 0)
-        let endPoint = CGPoint(x: img.size.width/2, y: img.size.height)
+//        let startPoint = CGPoint(x: img.size.width/2, y: 0)
+//        let endPoint = CGPoint(x: img.size.width/2, y: img.size.height)
+        
+        let point = self.calculatePoints(for: 45)
+        let startPoint = point[0]
+        let endPoint = point[1]
         
         context!.drawLinearGradient(gradient!, start: startPoint, end: endPoint, options: CGGradientDrawingOptions(rawValue: UInt32(0)))
         
@@ -243,6 +247,58 @@ class AppSingleton: NSObject {
         UIGraphicsEndImageContext()
         
         return image!
+    }
+    func tanx(_ 𝜽: CGFloat) -> CGFloat {
+        return tan(𝜽 * CGFloat.pi / 180)
+    }
+    func calculatePoints(for angle: CGFloat) -> [CGPoint] {
+        
+        var ang = (-angle).truncatingRemainder(dividingBy: 360)
+        
+        if ang < 0 { ang = 360 + ang }
+        
+        let n: CGFloat = 0.5
+        
+        var startPoint = CGPoint.zero
+        var endPoint = CGPoint.zero
+
+        
+        switch ang {
+            
+        case 0...45, 315...360:
+            let a = CGPoint(x: 0, y: n * tanx(ang) + n)
+            let b = CGPoint(x: 1, y: n * tanx(-ang) + n)
+            
+            startPoint = a
+            endPoint = b
+            
+        case 45...135:
+            let a = CGPoint(x: n * tanx(ang - 90) + n, y: 1)
+            let b = CGPoint(x: n * tanx(-ang - 90) + n, y: 0)
+            startPoint = a
+            endPoint = b
+            
+        case 135...225:
+            let a = CGPoint(x: 1, y: n * tanx(-ang) + n)
+            let b = CGPoint(x: 0, y: n * tanx(ang) + n)
+            startPoint = a
+            endPoint = b
+            
+        case 225...315:
+            let a = CGPoint(x: n * tanx(-ang - 90) + n, y: 0)
+            let b = CGPoint(x: n * tanx(ang - 90) + n, y: 1)
+            startPoint = a
+            endPoint = b
+            
+        default:
+            let a = CGPoint(x: 0, y: n)
+            let b = CGPoint(x: 1, y: n)
+            startPoint = a
+            endPoint = b
+            
+        }
+        
+        return [startPoint, endPoint]
     }
     
     func setImageClipMask(_ image: UIImage?, color: UIColor?) -> UIImage? {
@@ -261,4 +317,72 @@ class AppSingleton: NSObject {
         return img_clip
     }
 
+    func manageMBProgress(isShow: Bool) {
+        
+        DispatchQueue.main.async(execute: { () -> Void in
+            
+            if (isShow == true) {
+                
+                MBProgressHUD.showAdded(to: AppDelegateObj.window!, animated: true)
+            }
+            else {
+                
+                MBProgressHUD.hide(for: AppDelegateObj.window!, animated: true)
+            }
+        })
+    }
+    
+    func randomNumber(last: Int, min: Int, max: Int, isCheck: Bool = false) -> Int {
+        
+        var randomInt = Int.random(in: min ..< max)
+        var count = 0
+        while last == randomInt {
+            
+            randomInt = Int.random(in: min ..< max)
+            
+            if isCheck == true && count > 10 {
+                
+                break
+            }
+            
+            count += 1
+        }
+        return randomInt
+    }
+    
+    func randomNumber(min: Int, max: Int) -> Int {
+        
+        let randomInt = Int.random(in: min ..< max)
+        return randomInt
+    }
+    
+    func randomDecimal(min: Float, max: Float) -> Float {
+        
+        let randomFlt = Float.random(in: min ..< max)
+        return randomFlt
+    }
+    
+    func createImage(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) -> UIImage {
+        
+        let rect = CGRect(origin: .zero, size: size)
+        UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0)
+        color.setFill()
+        UIRectFill(rect)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        guard let cgImage = image?.cgImage else { return UIImage() }
+        
+        return UIImage.init(cgImage: cgImage)
+    }
+    
+    func takeScreenShotMethod(view: UIView) -> UIImage {
+        
+        UIGraphicsBeginImageContext(view.frame.size)
+        view.layer.render(in: UIGraphicsGetCurrentContext()!)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+    
+        return image!
+    }
 }

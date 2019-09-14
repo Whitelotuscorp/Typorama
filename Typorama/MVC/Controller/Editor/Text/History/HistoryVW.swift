@@ -69,7 +69,7 @@ class HistoryVW: UIView {
     
     func addToHistoty(style: infoStyle) {
         
-        self.muary_History.append(style)
+        self.muary_History.append(infoStyle.copy(style: style))
         
         if self.muary_History.count > 15 {
             

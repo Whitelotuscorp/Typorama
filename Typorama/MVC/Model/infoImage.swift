@@ -8,20 +8,30 @@
 
 import UIKit
 
+enum ImageType : Int {
+    
+    case COLOR
+    case IMAGE
+    case NONE
+}
+
 class infoImage: NSObject {
     
     var original : UIImage = UIImage()
     var image : UIImage = UIImage()
     
+    var type = ImageType(rawValue: 0)
+    
     var color : UIColor = .clear
     
     var str_Size : String = ""
     
-    init(size : String = "", color : UIColor = .clear, image : UIImage = UIImage()) {
+    init(size : String, color : UIColor, image : UIImage, type : ImageType) {
         
         self.str_Size = size
         self.color = color
         self.original = image
+        self.type = type
     }
     
     func getImage(size: CGSize) -> UIImage {
@@ -41,20 +51,13 @@ class infoImage: NSObject {
             sz_New = size
         }
         
-        return self.createImage(color: self.color, size: sz_New)
-    }
-    
-    func createImage(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) -> UIImage {
-        
-        let rect = CGRect(origin: .zero, size: size)
-        UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0)
-        color.setFill()
-        UIRectFill(rect)
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        guard let cgImage = image?.cgImage else { return UIImage() }
-        
-        return UIImage.init(cgImage: cgImage)
+        if self.type == ImageType.IMAGE {
+         
+            return self.original
+        }
+        else {
+            
+            return AppSingletonObj.createImage(color: self.color, size: sz_New)
+        }
     }
 }

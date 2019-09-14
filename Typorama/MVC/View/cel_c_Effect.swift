@@ -23,7 +23,7 @@ class cel_c_Effect: UICollectionViewCell {
         
         self.style.subviews.map({ $0.removeFromSuperview() })
         
-        let effect =  layer.effects[0]
+        let effect =  layer.effect
         
         let wdt_Vw : CGFloat = self.style.frame.width
         let vw_Edit = UIView(frame: CGRect(x: 0, y: 0, width: wdt_Vw, height: CGFloat.greatestFiniteMagnitude))
@@ -34,8 +34,8 @@ class cel_c_Effect: UICollectionViewCell {
         let bgColor : UIColor = layer.style == LayerStyle.SOLID ? UIColor.black : UIColor.clear
         let isClearLabel : Bool = layer.style == LayerStyle.SOLID ? true : false
         let x_Gap : CGFloat = layer.style == LayerStyle.SOLID ? (wdt_Vw / 30) : 0
-        let h_Line : CGFloat = wdt_Vw / 30
-        let w_Border : CGFloat = wdt_Vw / 15
+        let h_Line : CGFloat = wdt_Vw / (30 * layer.lineDiv)
+        let w_Border : CGFloat = wdt_Vw / (20 * layer.borderDiv)
         
         var y : CGFloat = w_Border + h_Line
         
@@ -83,7 +83,10 @@ class cel_c_Effect: UICollectionViewCell {
             
             lbl_Edit.frame = CGRect(x: w_Border + h_Line, y: y, width: w_Label, height: sz_Add.height)
             
+            var yClearLabel : CGFloat = 0
             if isClearLabel == true && info.isLine != true {
+                
+                yClearLabel = lbl_Edit.frame.height / 10;
                 
                 let objCTLbl = RSMaskedLabel(frame: lbl_Edit.frame)
                 vw_Edit.addSubview(objCTLbl)
@@ -101,13 +104,12 @@ class cel_c_Effect: UICollectionViewCell {
             }
             else {
                 
+                yClearLabel = 0
                 vw_Edit.addSubview(lbl_Edit)
-                
                 ary_Label.append(lbl_Edit)
-            }
+            }            
             
-            
-            y = y + lbl_Edit.frame.height + x_Gap
+            y = y + lbl_Edit.frame.height + x_Gap - yClearLabel
         }
         
         var rect = vw_Edit.frame

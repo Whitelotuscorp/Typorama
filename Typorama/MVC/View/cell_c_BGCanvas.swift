@@ -14,10 +14,16 @@ class cell_c_BGCanvas: UICollectionViewCell {
     
     @IBOutlet weak var imgvw_Trans: UIImageView!
     
+    @IBOutlet weak var lbl_Text: UILabel!
+    
+    @IBOutlet weak var lyl_x_Text: NSLayoutConstraint!
+    @IBOutlet weak var lyl_y_Text: NSLayoutConstraint!
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         
         self.imgvw_Trans.isHidden = true
+        
+        self.lbl_Text.font = UIFont(name: APPFONT_Bold, size: APPFONT_Size15)
     }
-
 }

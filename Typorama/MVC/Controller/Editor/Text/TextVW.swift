@@ -46,6 +46,8 @@ class TextVW: UIView {
     
     var muary_Menu = NSMutableArray()
     
+    var sizeCanvas : CGSize = CGSize.zero
+    
     override func draw(_ rect: CGRect) {
         // Drawing code
     }
@@ -151,10 +153,16 @@ class TextVW: UIView {
     }
     
     func addNewSticker() {
+
+        self.whenEditText()
+//        let info_Style = self.vw_Style.muary_Layer[0]
+//        self.delegate?.text?(view: self, changeStyle: info_Style)
+    }
+    
+    func whenEditText() {
         
         let info_Style = self.vw_Style.muary_Layer[0]
-        info_Style.index = 0
-        self.delegate?.text?(view: self, changeStyle: info_Style)
+        self.style(view: self.vw_Style, didSelected: info_Style)
     }
     
     func layerDidBeginEditing(sticker: ZDStickerView) {
@@ -197,8 +205,220 @@ extension TextVW: StypleVWDelegate {
     
     func style(view: StypleVW, didSelected style: infoStyle) {
 
-        self.vw_History.addToHistoty(style: style)
-        self.delegate?.text?(view: self, changeStyle: style)
+        let style_Prev = (self.currentLayer.info as! infoLayer).style
+        let str_Main = (self.currentLayer.info as! infoLayer).text
+        let str_Text = str_Main == "" ? TEXT_Default : str_Main
+        
+        let style_Copy = infoStyle.copy(style: style)
+        style_Copy.effect.isBorder = Bool.random()
+        style_Copy.effect.isLine = Bool.random()
+        style_Copy.borderDiv = CGFloat(AppSingletonObj.randomNumber(min: 1, max: 4))
+        style_Copy.lineDiv = CGFloat(AppSingletonObj.randomNumber(min: 1, max: 5))
+        style_Copy.charcterSpacing = CGFloat(AppSingletonObj.randomDecimal(min: -1.0, max: 1.5))
+        style_Copy.lineSpacing = CGFloat(AppSingletonObj.randomNumber(min: -5, max: 1))
+        
+        if str_Text != "" {
+            
+            var ary_Text = str_Text.components(separatedBy: " ")
+            
+            var int_Line = 1
+            var int_Min = 1
+            
+            if ary_Text.count > 20 {
+                
+                int_Min =  4
+                
+            }
+            else if ary_Text.count > 12 {
+                
+                int_Min =  2
+                
+            }
+            else if ary_Text.count > 1 {
+                
+                int_Min =  1
+            }
+            
+            var divLine = 2.0
+            if ary_Text.count < 12 {
+                
+                divLine = 2.0
+            }
+            else if ary_Text.count < 20 {
+                
+                divLine = 3.0
+            }
+            else {
+                
+                divLine = 4.0
+            }
+            
+            
+            var int_Max = Int(ceil(Double(ary_Text.count) / Double(divLine)))
+            if int_Max - 1 == int_Min {
+                
+                int_Max = Int(ary_Text.count)
+            }
+            
+            print("---------------->")
+            print("int_Min-> \(int_Min)")
+            print("int_Max-> \(int_Max)")
+            print("arycunt-> \(ary_Text.count)")
+            
+            if ary_Text.count > 3 {
+                
+                int_Line = AppSingletonObj.randomNumber(min: int_Min, max: int_Max)
+            }
+            
+            print("calllll--------->")
+            
+            if ary_Text.count <= 3 && int_Line == style_Prev.effect.line && style_Copy.effect.isBorder == style_Prev.effect.isBorder && style_Copy.effect.isLine == style_Prev.effect.isLine {
+                
+                int_Line = style_Prev.effect.line == 1 ? 2 : 1
+            }
+            else if ary_Text.count > 3 && int_Line == style_Prev.effect.line && style_Copy.effect.isBorder == style_Prev.effect.isBorder && style_Copy.effect.isLine == style_Prev.effect.isLine {
+                
+                int_Line = AppSingletonObj.randomNumber(last: int_Line, min: int_Min, max: int_Max)
+            }
+            
+            if ary_Text.count > 5 && int_Line == 1 {
+                
+                int_Line = 2
+            }
+            
+            if int_Line > 15 {
+                
+                int_Line = 15
+            }
+            
+            style_Copy.effect.line = int_Line
+            
+            var ary_Line : [Int] = []
+            if style_Copy.effect.isLine == true && int_Line > 1 && style_Copy.style != LayerStyle.SOLID {
+              
+                var line_Solid = 1
+                
+                if int_Line > 4 {
+                    
+                    line_Solid = AppSingletonObj.randomNumber(min: 0, max: Int(Int(int_Line/2) > 5 ? 5 : Int(int_Line/2)))
+                }
+                
+                while ary_Line.count != line_Solid {
+                    
+                    var index_Line = AppSingletonObj.randomNumber(min: 0, max: int_Line - 1)
+                    
+                    if index_Line == 0 {
+                        
+                        index_Line = 1
+                    }
+                    
+                    if !ary_Line.contains(index_Line) {
+                     
+                        ary_Line.append(index_Line)
+                    }
+                }
+                
+                int_Line = int_Line + line_Solid
+            }
+            
+            var ary_StyleSting : [infoText] = []
+            
+            var lstCount = 0
+            if int_Line > 1 {
+                
+                while ary_Text.count > 0 {
+                    
+                    let min_Chr : Int = 1
+                    var max_Chr : Int = Int(ceil(Double(ary_Text.count) / Double(2.0)))
+                    
+                    var count = 1
+                    if max_Chr != min_Chr {
+                        
+                        max_Chr = max_Chr > 15 ? 14 : max_Chr
+                        
+                        count = AppSingletonObj.randomNumber(min: min_Chr, max: max_Chr)
+                        
+                        if lstCount == count {
+                            
+                            count = AppSingletonObj.randomNumber(min: min_Chr, max: max_Chr)
+                        }
+                        
+                        lstCount = count
+                    }
+                    
+                    if count > 5 {
+                        
+                        count = 5
+                        
+                        int_Line = int_Line + 1
+                    }
+                    
+                    var subArray = ary_Text[0...count - 1]
+                    
+                    if subArray.joined(separator: " ").count > 22 {
+                     
+                        count -= 1
+                        subArray = ary_Text[0...count - 1]
+                    }
+                    else if subArray.joined(separator: " ").count < 6 && ary_Text.count > 2 {
+                        
+                        count += 1
+                        subArray = ary_Text[0...count - 1]
+                    }
+                    
+                    
+                    for _ in 0 ..< count {
+                        
+                        ary_Text.remove(at: 0)
+                    }
+                    
+                    if ary_Text.joined(separator: " ").count < 5 {
+                        
+                        subArray.append(ary_Text.joined(separator: " "))
+                        ary_Text = []
+                    }
+                    
+                    let info_Text = infoText(text: subArray.joined(separator: " "))
+                    ary_StyleSting.append(info_Text)
+                    
+                    if ary_Line.contains(ary_StyleSting.count) {
+                        
+                        let info_Text = infoText(text: "", line: true)
+                        ary_StyleSting.append(info_Text)
+                    }
+                    
+                    
+                    if (ary_Text.count == 1 || ary_StyleSting.count == int_Line - 1) && ary_Text.count <= 5 && ary_Text.joined(separator: " ").count < 20 {
+                        
+                        let info_Text = infoText(text: ary_Text.joined(separator: " "))
+                        ary_StyleSting.append(info_Text)
+                        ary_Text = []
+                    }
+                    else if ary_Text.count == 2 {
+                        
+                        let subArray1 = ary_Text[0...0]
+                        
+                        if subArray1.joined(separator: " ").count < 5 {
+                            
+                            let info_Text = infoText(text: ary_Text.joined(separator: " "))
+                            ary_StyleSting.append(info_Text)
+                            ary_Text = []
+                        }
+                    }
+                }
+            }
+            else {
+                
+                let info_Text = infoText(text: ary_Text.joined(separator: " "))
+                ary_StyleSting.append(info_Text)
+            }
+            
+            style_Copy.effect.texts = ary_StyleSting
+        }
+
+        print("calllll---------> Finished")
+        self.vw_History.addToHistoty(style: style_Copy)
+        self.delegate?.text?(view: self, changeStyle: style_Copy)
         
         if self.vw_History.muary_History.count == 1 {
             

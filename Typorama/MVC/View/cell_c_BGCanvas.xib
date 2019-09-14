@@ -13,25 +13,33 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="cell_c_BGCanvas" id="gTV-IL-0wX" customClass="cell_c_BGCanvas" customModule="Typorama" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+            <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
             <autoresizingMask key="autoresizingMask"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KMo-jh-ixT">
-                        <rect key="frame" x="0.5" y="0.5" width="49" height="49"/>
+                        <rect key="frame" x="0.5" y="0.5" width="199" height="199"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="canvas.png" translatesAutoresizingMaskIntoConstraints="NO" id="V0y-LB-aWi">
-                                <rect key="frame" x="0.0" y="0.0" width="49" height="49"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="canvas.png" translatesAutoresizingMaskIntoConstraints="NO" id="V0y-LB-aWi">
+                                <rect key="frame" x="0.0" y="0.0" width="199" height="199"/>
                             </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="v0F-dg-Z3n">
+                                <rect key="frame" x="78.5" y="89.5" width="42" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="V0y-LB-aWi" firstAttribute="top" secondItem="KMo-jh-ixT" secondAttribute="top" id="4yS-sR-pFU"/>
                             <constraint firstAttribute="bottom" secondItem="V0y-LB-aWi" secondAttribute="bottom" id="Q0R-L9-D8V"/>
                             <constraint firstItem="V0y-LB-aWi" firstAttribute="leading" secondItem="KMo-jh-ixT" secondAttribute="leading" id="QK8-UZ-0cU"/>
+                            <constraint firstItem="v0F-dg-Z3n" firstAttribute="centerX" secondItem="KMo-jh-ixT" secondAttribute="centerX" id="a1f-gu-3RU"/>
                             <constraint firstAttribute="trailing" secondItem="V0y-LB-aWi" secondAttribute="trailing" id="h7h-EA-SrV"/>
+                            <constraint firstItem="v0F-dg-Z3n" firstAttribute="centerY" secondItem="KMo-jh-ixT" secondAttribute="centerY" id="rWu-j7-bu3"/>
                         </constraints>
                     </view>
                 </subviews>
@@ -43,10 +51,15 @@
                 <constraint firstAttribute="bottom" secondItem="KMo-jh-ixT" secondAttribute="bottom" constant="0.5" id="tGv-dE-Yss"/>
             </constraints>
             <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
+            <size key="customSize" width="227" height="196"/>
             <connections>
                 <outlet property="imgvw_Trans" destination="V0y-LB-aWi" id="lXp-nN-vv7"/>
+                <outlet property="lbl_Text" destination="v0F-dg-Z3n" id="LeE-Rv-sJg"/>
+                <outlet property="lyl_x_Text" destination="a1f-gu-3RU" id="Tos-02-f4B"/>
+                <outlet property="lyl_y_Text" destination="rWu-j7-bu3" id="xSg-my-wDp"/>
                 <outlet property="vw_BG" destination="KMo-jh-ixT" id="YbS-QL-el9"/>
             </connections>
+            <point key="canvasLocation" x="165.94202898550725" y="83.705357142857139"/>
         </collectionViewCell>
     </objects>
     <resources>

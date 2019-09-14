@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import FirebaseCore
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -29,7 +30,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let status = UIApplication.shared.value(forKey: "statusBar") as? UIView {
             status.backgroundColor = COLOR_Cream
         }
-
+        print(AppSingletonObj.getFilePath(filename: ""))
+        
+        
+        FIRApp.configure()
+        
         return true
     }
 

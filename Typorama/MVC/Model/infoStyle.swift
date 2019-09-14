@@ -22,72 +22,41 @@ enum LayerStyle : Int {
 
 class infoStyle: NSObject {
 
-    var style = LayerStyle(rawValue: 0)
+    var text : String = ""
     
-    var effects : [infoEffect] = []
-    var index : Int = 0
+    var style = LayerStyle(rawValue: 0)
+    var effect = infoEffect()
+    
+    var lineDiv : CGFloat = 1
+    var borderDiv : CGFloat = 1
+    var charcterSpacing : CGFloat = 0.0
+    var lineSpacing : CGFloat = 1.0
     
 //    var ary_String : [String] = ["White Lotus Pvt", "Lotus Corporation", "Corporation Company", "Company White"]
     
-    class func copyOne(effect: infoEffect, With style: infoStyle) -> infoStyle {
-        
+    class func copy(style: infoStyle) -> infoStyle {
+
         let info = infoStyle()
-        
+        info.text = style.text
         info.style = style.style
-        info.effects = [effect]
+        info.effect = infoEffect.copy(effect: style.effect)
+        info.lineDiv = style.lineDiv
+        info.borderDiv = style.borderDiv
+        info.charcterSpacing = style.charcterSpacing
+        info.lineSpacing = style.lineSpacing
         
         return info
     }
     
     class func setLayerInfoNone(text: [String]) -> infoStyle {
-        
+                
         let info = infoStyle()
         info.style = LayerStyle.NONE
         
         let effect = infoEffect()
         effect.texts = [infoText(text: "WE EASILY"), infoText(text: "CAN"), infoText(text: "DO THIS")]
-        info.effects.append(effect)
-        
-        let effectB = infoEffect()
-        effectB.isBorder = true
-        effectB.texts = [infoText(text: "WE EASILY"), infoText(text: "CAN"), infoText(text: "DO THIS")]
-        info.effects.append(effectB)
-        
-        let effect1 = infoEffect()
-        effect1.texts = [infoText(text: "WE"), infoText(text: "EASILY"), infoText(text: "CAN DO THIS")]
-        info.effects.append(effect1)
-        
-        let effect1B = infoEffect()
-        effect1B.isBorder = true
-        effect1B.texts = [infoText(text: "WE"), infoText(text: "EASILY"), infoText(text: "CAN DO THIS")]
-        info.effects.append(effect1B)
-        
-        let effect2 = infoEffect()
-        effect2.texts = [infoText(text: "WE EASILY CAN DO"), infoText(text: "THIS")]
-        info.effects.append(effect2)
-        
-        let effect2B = infoEffect()
-        effect2B.isBorder = true
-        effect2B.texts = [infoText(text: "WE EASILY CAN DO"), infoText(text: "THIS")]
-        info.effects.append(effect2B)
-        
-        let effect3 = infoEffect()
-        effect3.texts = [infoText(text: "WE"), infoText(text: "", line: true), infoText(text: "EASILY CAN DO THIS")]
-        info.effects.append(effect3)
-        
-        let effect3B = infoEffect()
-        effect3B.isBorder = true
-        effect3B.texts = [infoText(text: "WE"), infoText(text: "", line: true), infoText(text: "EASILY CAN DO THIS")]
-        info.effects.append(effect3B)
-        
-        let effect4 = infoEffect()
-        effect4.texts = [infoText(text: "WE EASILY CAN DO THIS")]
-        info.effects.append(effect4)
-        
-        let effect4B = infoEffect()
-        effect4B.isBorder = true
-        effect4B.texts = [infoText(text: "WE EASILY CAN DO THIS")]
-        info.effects.append(effect4B)
+        effect.line = 3
+        info.effect = effect
         
         return info
     }
@@ -100,47 +69,8 @@ class infoStyle: NSObject {
         let effectB = infoEffect()
         effectB.isBorder = true
         effectB.texts = [infoText(text: "WE EASILY"), infoText(text: "CAN"), infoText(text: "DO THIS")]
-        info.effects.append(effectB)
-        
-        let effect = infoEffect()
-        effect.texts = [infoText(text: "WE EASILY"), infoText(text: "CAN"), infoText(text: "DO THIS")]
-        info.effects.append(effect)
-        
-        let effect1 = infoEffect()
-        effect1.texts = [infoText(text: "WE"), infoText(text: "EASILY"), infoText(text: "CAN DO THIS")]
-        info.effects.append(effect1)
-        
-        let effect1B = infoEffect()
-        effect1B.isBorder = true
-        effect1B.texts = [infoText(text: "WE"), infoText(text: "EASILY"), infoText(text: "CAN DO THIS")]
-        info.effects.append(effect1B)
-        
-        let effect2 = infoEffect()
-        effect2.texts = [infoText(text: "WE EASILY CAN DO"), infoText(text: "THIS")]
-        info.effects.append(effect2)
-        
-        let effect2B = infoEffect()
-        effect2B.isBorder = true
-        effect2B.texts = [infoText(text: "WE EASILY CAN DO"), infoText(text: "THIS")]
-        info.effects.append(effect2B)
-        
-        let effect3 = infoEffect()
-        effect3.texts = [infoText(text: "WE"), infoText(text: "EASILY CAN DO THIS")]
-        info.effects.append(effect3)
-        
-        let effect3B = infoEffect()
-        effect3B.isBorder = true
-        effect3B.texts = [infoText(text: "WE"), infoText(text: "EASILY CAN DO THIS")]
-        info.effects.append(effect3B)
-        
-        let effect4 = infoEffect()
-        effect4.texts = [infoText(text: "WE EASILY CAN DO THIS")]
-        info.effects.append(effect4)
-        
-        let effect4B = infoEffect()
-        effect4B.isBorder = true
-        effect4B.texts = [infoText(text: "WE EASILY CAN DO THIS")]
-        info.effects.append(effect4B)
+        effectB.line = 3
+        info.effect = effectB
         
         return info
     }
@@ -149,7 +79,19 @@ class infoStyle: NSObject {
 class infoEffect: NSObject {
     
     var isBorder : Bool = false
+    var isLine : Bool = false
+    var line : Int = 1
     var texts : [infoText] = []
+    
+    class func copy(effect: infoEffect) -> infoEffect {
+        
+        let info = infoEffect()
+        info.isBorder = effect.isBorder
+        info.isLine = effect.isLine
+        info.line = effect.line
+        info.texts = effect.texts
+        return info
+    }
 }
 
 class infoText: NSObject {
