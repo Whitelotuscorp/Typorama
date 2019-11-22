@@ -19,69 +19,191 @@ class cel_c_Effect: UICollectionViewCell {
         // Initialization code
     }
 
-    func updateLayer(layer: infoStyle) {
+    func updateLayer(layer: infoStyle, width: CGFloat = 0) {
         
         self.style.subviews.map({ $0.removeFromSuperview() })
         
         let effect =  layer.effect
         
-        let wdt_Vw : CGFloat = self.style.frame.width
+        let wdt_Vw : CGFloat = width == 0 ? self.frame.width - 10 : width
+        
         let vw_Edit = UIView(frame: CGRect(x: 0, y: 0, width: wdt_Vw, height: CGFloat.greatestFiniteMagnitude))
         
         var ary_Label : [UILabel] = []
         
         let textColor : UIColor = layer.style == LayerStyle.SOLID ? UIColor.white : UIColor.black
+        let fontFamily = layer.fontFamily
         let bgColor : UIColor = layer.style == LayerStyle.SOLID ? UIColor.black : UIColor.clear
         let isClearLabel : Bool = layer.style == LayerStyle.SOLID ? true : false
         let x_Gap : CGFloat = layer.style == LayerStyle.SOLID ? (wdt_Vw / 30) : 0
-        let h_Line : CGFloat = wdt_Vw / (30 * layer.lineDiv)
+        let y_Gap : CGFloat = 0
+        var h_Line : CGFloat = wdt_Vw / (30 * layer.lineDiv)
         let w_Border : CGFloat = wdt_Vw / (20 * layer.borderDiv)
+
+        h_Line = h_Line > 3 ? 3 : h_Line
         
         var y : CGFloat = w_Border + h_Line
         
         let lbl_Border = UILabel()
         lbl_Border.clipsToBounds = true
+        lbl_Border.layer.borderColor = layer.style == LayerStyle.LEFT ? UIColor.clear.cgColor : UIColor.black.cgColor
         lbl_Border.layer.borderWidth = effect.isBorder == true ? w_Border : 0
         vw_Edit.addSubview(lbl_Border)
         ary_Label.append(lbl_Border)
         
+        var fl_pd : CGFloat = 0
+        var maxStrFont : Int = 10
+        
+        if layer.style == LayerStyle.LEFT {
+            
+            let max = effect.texts.max(by: {$1.text.count > $0.text.count})
+            let w_Label = wdt_Vw - ((w_Border + h_Line) * 2)
+            var sz_Add : CGSize = CGSize(width: w_Label, height: h_Line)
+            
+            maxStrFont = Int(1.9 * wdt_Vw / CGFloat(max!.text.count))
+            
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.alignment = .center
+            
+            var attrs = [NSAttributedString.Key.font: UIFont(name: fontFamily, size: CGFloat(maxStrFont)) as Any,
+                         NSAttributedString.Key.foregroundColor : textColor,
+                         NSAttributedString.Key.paragraphStyle: paragraphStyle,
+                         NSAttributedString.Key.kern : NSNumber(value: Float(layer.charcterSpacing))]
+            
+            let string = max!.text
+                        
+            var isIncFont : Bool = true
+            while(isIncFont == true){
+                
+                maxStrFont -= 1
+                
+                attrs[NSAttributedString.Key.font] = UIFont(name: fontFamily, size: CGFloat(maxStrFont)) as Any
+                sz_Add = (string as NSString).size(withAttributes: attrs)
+                
+                if maxStrFont < 3 || sz_Add.width < w_Label {
+                    
+                    isIncFont = false
+                }
+            }
+        }
+        
         for info in effect.texts {
             
-            let lbl_Edit = UILabel()
+            let w_Label = wdt_Vw - ((w_Border + h_Line) * 2)
+            var sz_Add : CGSize = CGSize(width: w_Label, height: h_Line)
             
-            var largestFontSize: CGFloat = wdt_Vw / 2
-            lbl_Edit.text = info.text.uppercased()
-            lbl_Edit.font = UIFont(name: "Futura-Bold", size: largestFontSize)
+            let lbl_Edit = PaddingLabel(frame: CGRect(x: w_Border + h_Line, y: y, width: w_Label, height: CGFloat.greatestFiniteMagnitude))
+            vw_Edit.addSubview(lbl_Edit)
+            
+            let divFont : CGFloat = info.text.count > 3 ? 2 : CGFloat(Double(info.text.count) * Double(0.5))
+            var largestFontSize: CGFloat = wdt_Vw / CGFloat(divFont)
+            
+            if layer.style == LayerStyle.LEFT {
+                
+                largestFontSize = CGFloat(maxStrFont)
+            }
+            
+            lbl_Edit.text = info.text
+            lbl_Edit.font = UIFont(name: fontFamily, size: largestFontSize)
             lbl_Edit.numberOfLines = 1
             lbl_Edit.minimumScaleFactor = 0.01
             lbl_Edit.lineBreakMode = .byWordWrapping
-            lbl_Edit.textAlignment = .center
+            lbl_Edit.textAlignment = layer.textAlignment // == LayerStyle.LEFT ? .left : .center
             lbl_Edit.adjustsFontSizeToFitWidth = true
             lbl_Edit.textColor = textColor
             
-            let w_Label = wdt_Vw - ((w_Border + h_Line) * 2)
+            let attributedString = NSMutableAttributedString(attributedString: lbl_Edit.attributedText!)
+
+            attributedString.addAttributes([NSAttributedString.Key.kern : NSNumber(value: Float(layer.charcterSpacing))],
+                                           range: NSRange(location: 0, length: lbl_Edit.text!.count))
             
-            var sz_Add : CGSize = CGSize(width: w_Label, height: h_Line)
+            lbl_Edit.attributedText = attributedString
+            var h_LabelU : CGFloat = 0
+            var pd : CGFloat = 0
+            
             if info.isLine == true {
                 
+                h_LabelU = 0
                 lbl_Edit.backgroundColor = textColor
                 sz_Add = CGSize(width: w_Label, height: h_Line)
-                
             }
-            else {
+            else if layer.style != LayerStyle.LEFT {
                 
-                while(lbl_Edit.sizeThatFits(CGSize(width: w_Label, height: CGFloat.greatestFiniteMagnitude)).width > w_Label){
+                var w_LabelU = w_Label
+                
+                if isClearLabel == true {
                     
-                    largestFontSize -= 1
+                    h_LabelU = 3
+                    w_LabelU = w_Label - 10
+                }
+                
+                while(lbl_Edit.sizeThatFits(CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)).width > w_LabelU){
+                    
+                    largestFontSize -= 0.50
+                    if largestFontSize < 3 {
+                        
+                        largestFontSize = 2.5
+                        break
+                    }
                     lbl_Edit.font = UIFont(name: lbl_Edit.font.fontName, size: largestFontSize)
                 }
                 
                 lbl_Edit.backgroundColor = bgColor
+                sz_Add = lbl_Edit.sizeThatFits(CGSize(width: w_LabelU, height: CGFloat.greatestFiniteMagnitude))
+
+                if sz_Add.width != w_LabelU {
+                    
+                    var charcterSpacing = layer.charcterSpacing
+                    while(lbl_Edit.sizeThatFits(CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)).width < w_LabelU){
+                        
+                        if sz_Add.width < w_LabelU {
+                            
+                            charcterSpacing += 0.05
+                        }
+
+                        
+                        let attributedString = NSMutableAttributedString(attributedString: lbl_Edit.attributedText!)
+                        
+                        attributedString.addAttributes([NSAttributedString.Key.kern : NSNumber(value: Float(charcterSpacing))],
+                                                       range: NSRange(location: 0, length: lbl_Edit.text!.count))
+                        
+                        lbl_Edit.attributedText = attributedString
+                        sz_Add = lbl_Edit.sizeThatFits(CGSize(width: w_LabelU, height: CGFloat.greatestFiniteMagnitude))
+
+                        if lbl_Edit.frame.width > w_LabelU {
+                            
+                            break
+                        }
+                    }
+                }
+                
+                pd = -largestFontSize / 8
+                
+                lbl_Edit.topInset = pd
+                lbl_Edit.bottomInset = pd
+                
+                sz_Add = lbl_Edit.sizeThatFits(CGSize(width: w_LabelU, height: CGFloat.greatestFiniteMagnitude))
+            }
+            else {
+                
                 sz_Add = lbl_Edit.sizeThatFits(CGSize(width: w_Label, height: CGFloat.greatestFiniteMagnitude))
             }
             
+            if fl_pd == 0 && isClearLabel == false {
+                
+                fl_pd = pd
+            }
             
-            lbl_Edit.frame = CGRect(x: w_Border + h_Line, y: y, width: w_Label, height: sz_Add.height)
+            if info.isLine == true || isClearLabel == true {
+                
+                pd = 0
+                let ln_pd : CGFloat = info.isLine == true ? 1 : 0
+                lbl_Edit.frame = CGRect(x: w_Border + h_Line, y: y + ln_pd, width: w_Label, height: sz_Add.height + h_LabelU)
+            }
+            else {
+                
+                lbl_Edit.frame = CGRect(x: w_Border + h_Line, y: y + pd, width: w_Label, height: sz_Add.height + h_LabelU)
+            }
             
             var yClearLabel : CGFloat = 0
             if isClearLabel == true && info.isLine != true {
@@ -90,7 +212,7 @@ class cel_c_Effect: UICollectionViewCell {
                 
                 let objCTLbl = RSMaskedLabel(frame: lbl_Edit.frame)
                 vw_Edit.addSubview(objCTLbl)
-                
+                lbl_Edit.removeFromSuperview()
                 objCTLbl.text = info.text.uppercased()
                 objCTLbl.font = lbl_Edit.font
                 objCTLbl.backgroundColor = bgColor
@@ -105,11 +227,10 @@ class cel_c_Effect: UICollectionViewCell {
             else {
                 
                 yClearLabel = 0
-                vw_Edit.addSubview(lbl_Edit)
                 ary_Label.append(lbl_Edit)
-            }            
+            }
             
-            y = y + lbl_Edit.frame.height + x_Gap - yClearLabel
+            y = y + lbl_Edit.frame.height + x_Gap + y_Gap + pd - yClearLabel
         }
         
         var rect = vw_Edit.frame
@@ -123,6 +244,11 @@ class cel_c_Effect: UICollectionViewCell {
         self.style.addSubview(vw_Edit)
         self.style.center = self.contentView.center
         
+        if self.frame.height < frame_Text.height && width == 0 {
+            
+            let wdt_Reduce = (self.frame.height * frame_Text.width) / frame_Text.height
+            self.updateLayer(layer: layer, width: wdt_Reduce - 10)
+        }
     }
 //    {
 //

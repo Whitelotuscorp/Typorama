@@ -8,21 +8,32 @@
 
 import UIKit
 
-
+@objc
+enum LayerType : Int {
+    
+    case TEXT
+    case PHOTO
+    case LOGO
+    case SHAPE
+}
 
 class infoLayer: NSObject {
 
+    var type = LayerType(rawValue: 0)
+    
     var style : infoStyle = infoStyle()
     
     var text : String = ""
-    var fontFamily : String = "Bebas"
     
     var main : UIImage = UIImage()
     var image : UIImage = UIImage()
     
     var color : UIColor = .black
     
+    var isLine : Bool = false
+    
     var shadow : infoLayerShadow = infoLayerShadow(shadow: false)
+    var gradient : infoLayerGradient = infoLayerGradient(gradient: false)
 
     init(color : UIColor = .black, text : String = "") {
         
@@ -43,5 +54,18 @@ class infoLayerShadow: NSObject {
     init(shadow: Bool = false) {
         
         self.isShadow = shadow
+    }
+}
+
+class infoLayerGradient: NSObject {
+    
+    var isGradient : Bool = false
+    var colors : [UIColor] = []
+    var ratio : Float = 0.5
+    var direction : Float = 45.0
+    
+    init(gradient: Bool = false) {
+        
+        self.isGradient = gradient
     }
 }

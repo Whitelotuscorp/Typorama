@@ -7,8 +7,32 @@
 //
 
 import UIKit
+import GPUImage
 
+@objc
+enum ImageAdjustment : Int {
+    
+    case brightness
+    case exposure
+    case contrast
+    case vibrancy
+    case saturation
+    case vignette
+    case blur
+}
+
+@objc protocol ImageVWDelegate: class {
+    
+    @objc optional func image(view: ImageVW, changeImage type: String)
+    @objc optional func image(view: ImageVW, changeColor color: UIColor)
+    
+    @objc optional func image(view: ImageVW, DidChange image: UIImage)
+    @objc optional func image(view: ImageVW, DidChange value: Any, With adjust: ImageAdjustment)
+}
+    
 class ImageVW: UIView {
+    
+    weak var delegate : ImageVWDelegate?
     
     @IBOutlet var contentView: UIView!
     @IBOutlet var vw_Menu: UIView!
@@ -25,7 +49,11 @@ class ImageVW: UIView {
     var muary_Menu = NSMutableArray()
     var muary_Content = NSMutableArray()
     
-    var index_Selected : Int = 0
+    var menu_Selected : String = ""
+    
+    var adjustType : ImageAdjustment = ImageAdjustment.brightness
+    
+    var context = CIContext()
     
     override func draw(_ rect: CGRect) {
         // Drawing code
@@ -53,6 +81,8 @@ class ImageVW: UIView {
     }    
     func configureXIB() {
         
+        self.context = SingletonCIContext.context()
+        
         self.contentView = configureNib()
         self.contentView.frame = bounds
         self.contentView.backgroundColor = .clear
@@ -64,6 +94,8 @@ class ImageVW: UIView {
         self.vw_Menu.backgroundColor = COLOR_White
         
         self.sld_Value.setThumbImage(UIImage(named: "thumb_cir"), for: .normal)
+        
+        self.lbl_Intensity.font = UIFont(name: APPFONT_Bold, size: APPFONT_Size15)
         
         let nib_CellCrop = UINib(nibName: "cell_c_Menu", bundle: nil)
         self.clc_Menu.register(nib_CellCrop, forCellWithReuseIdentifier: "cell_c_Menu")
@@ -90,7 +122,12 @@ class ImageVW: UIView {
     
     @objc func action_SelectOption(index: Int) {
         
+        let dict : [String:String] = self.muary_Menu.object(at: index) as! [String : String]
+        self.menu_Selected = dict["name"]!
+        
         let layout_Cat = self.clc_Content.collectionViewLayout as! UICollectionViewFlowLayout
+        
+        self.lbl_Intensity.text = "INTENSITY"
         
         if index == 0 {
             
@@ -98,11 +135,16 @@ class ImageVW: UIView {
             self.lyl_h_Slider.constant = 0
             layout_Cat.itemSize = CGSize(width: (self.clc_Content.frame.width - 5) / 3, height: 100)
         }
-        else if index == 3 {
+        else if index == 1 {
+            
+            self.lbl_Intensity.text = ""
             
             self.muary_Content = NSMutableArray(array: ARRAY_ImageMenu4)
             self.lyl_h_Slider.constant = 60
             layout_Cat.itemSize = CGSize(width: 115, height: 45)
+            
+            self.adjustType = ImageAdjustment(rawValue: 0)!
+            self.action_SelectAdjustmentOption()
         }
         else {
             
@@ -120,6 +162,142 @@ class ImageVW: UIView {
         self.clc_Content.reloadData()
         
         self.updateConstraintsIfNeeded()
+    }
+    
+    @objc func action_SelectAdjustmentOption() {
+        
+        self.clc_Content.reloadData()
+        
+        if self.adjustType == ImageAdjustment.brightness {
+            
+            self.sld_Value.minimumValue = -0.5
+            self.sld_Value.maximumValue = 0.5
+            self.sld_Value.value = Float(Editor_VC.sharedInstance().info_Image.brightness)
+        }
+        else if self.adjustType == ImageAdjustment.exposure {
+            
+            self.sld_Value.minimumValue = -1.0
+            self.sld_Value.maximumValue = 1.0
+            self.sld_Value.value = Float(Editor_VC.sharedInstance().info_Image.exposure)
+        }
+        else if self.adjustType == ImageAdjustment.contrast {
+            
+            self.sld_Value.minimumValue = 0.0
+            self.sld_Value.maximumValue = 2.0
+            self.sld_Value.value = Float(Editor_VC.sharedInstance().info_Image.contrast)
+        }
+        else if self.adjustType == ImageAdjustment.vibrancy {
+                        
+            self.sld_Value.minimumValue = -0.3
+            self.sld_Value.maximumValue = 0.3
+            self.sld_Value.value = Float(Editor_VC.sharedInstance().info_Image.vibrancy)
+        }
+        else if self.adjustType == ImageAdjustment.saturation {
+            
+            self.sld_Value.minimumValue = 0.5
+            self.sld_Value.maximumValue = 1.5
+            self.sld_Value.value = Float(Editor_VC.sharedInstance().info_Image.saturation)
+        }
+        else if self.adjustType == ImageAdjustment.vignette {
+            
+            self.sld_Value.minimumValue = -2.2
+            self.sld_Value.maximumValue = 0.2
+            self.sld_Value.value = Float(Editor_VC.sharedInstance().info_Image.vignette)
+        }
+        else if self.adjustType == ImageAdjustment.blur {
+            
+            self.sld_Value.minimumValue = -5.0
+            self.sld_Value.maximumValue = 5.0
+            self.sld_Value.value = Float(Editor_VC.sharedInstance().info_Image.blur)
+        }
+    }
+    @IBAction func action_ChangeAdjustmentValue(_ sender: UISlider) {
+        
+        if self.adjustType == ImageAdjustment.brightness {
+            
+            Editor_VC.sharedInstance().info_Image.brightness = CGFloat(sender.value)
+        }
+        else if self.adjustType == ImageAdjustment.exposure {
+            
+            Editor_VC.sharedInstance().info_Image.exposure = CGFloat(sender.value)
+        }
+        else if self.adjustType == ImageAdjustment.contrast {
+            
+            Editor_VC.sharedInstance().info_Image.contrast = CGFloat(sender.value)
+        }
+        else if self.adjustType == ImageAdjustment.vibrancy {
+            
+            Editor_VC.sharedInstance().info_Image.vibrancy = CGFloat(sender.value)
+        }
+        else if self.adjustType == ImageAdjustment.saturation {
+            
+            Editor_VC.sharedInstance().info_Image.saturation = CGFloat(sender.value)
+        }
+        else if self.adjustType == ImageAdjustment.vignette {
+            
+            Editor_VC.sharedInstance().info_Image.vignette = CGFloat(sender.value)
+        }
+        else if self.adjustType == ImageAdjustment.blur {
+            
+            var value = sender.value
+            
+            if sender.value < 0.0 {
+                
+                value = sender.value * -1.0
+            }
+            
+            Editor_VC.sharedInstance().info_Image.blur = CGFloat(value)
+        }
+        
+        self.changeImageAdjustValue()
+    }
+    
+    func changeImageAdjustValue() {
+        
+        let mainImage = Editor_VC.sharedInstance().info_Image.original
+        
+        let brightness = BrightnessAdjustment()
+        brightness.brightness = Float(Editor_VC.sharedInstance().info_Image.brightness)
+        
+        let exposure = ExposureAdjustment()
+        exposure.exposure = Float(Editor_VC.sharedInstance().info_Image.exposure)
+        
+        let contrast = ContrastAdjustment()
+        contrast.contrast = Float(Editor_VC.sharedInstance().info_Image.contrast)
+        
+        let vibrance = Vibrance()
+        vibrance.vibrance = Float(Editor_VC.sharedInstance().info_Image.vibrancy)
+        
+        let saturation = SaturationAdjustment()
+        saturation.saturation = Float(Editor_VC.sharedInstance().info_Image.saturation)
+        
+        let vignette = Vignette()
+        vignette.end = Float((Editor_VC.sharedInstance().info_Image.vignette * -1) + 1.0)
+        
+        let editedImage = mainImage.filterWithPipeline { (input, output) in
+
+            input --> brightness --> exposure --> contrast --> vibrance --> saturation --> vignette --> output
+        }
+        
+        let imgLast = self.blur(image: editedImage, With: Float(Editor_VC.sharedInstance().info_Image!.blur))
+        self.delegate?.image?(view: self, DidChange: imgLast)
+    }
+    
+    func blur(image: UIImage, With scale: Float) -> UIImage {
+        
+        if scale <= 0.0 {
+        
+            return image
+        }
+        
+        let inputImage = CIImage(image: image)
+        let filter = CIFilter(name: "CIGaussianBlur", parameters: ["inputImage" : inputImage as Any,
+                                                                   "inputRadius" : NSNumber(value: scale)])
+        let result = filter?.outputImage
+        let cgImage = self.context.createCGImage(result!, from: result!.extent)
+        let outputImage = UIImage(cgImage: cgImage!)
+              
+        return outputImage
     }
 }
 
@@ -151,11 +329,22 @@ extension ImageVW: UICollectionViewDelegate, UICollectionViewDataSource, UIColle
         }
         else {
             
-            if self.index_Selected == 0 || self.index_Selected == 3 {
+            if self.menu_Selected == kMENUIMAGE_Image || self.menu_Selected == kMENUIMAGE_Adjustments {
                 
                 let cell : cell_c_View = collectionView.dequeueReusableCell(withReuseIdentifier: "cell_c_View", for: indexPath) as! cell_c_View
                 
-                cell.lbl_Name.text = self.muary_Content.object(at: indexPath.row) as! String
+                cell.lbl_Name.text = (self.muary_Content.object(at: indexPath.row) as! String)
+                
+                if self.menu_Selected == kMENUIMAGE_Adjustments && indexPath.row == self.adjustType.rawValue {
+                    
+                    cell.vw_BG.backgroundColor = COLOR_GrayD060
+                    cell.lbl_Name.textColor = COLOR_White
+                }
+                else {
+                    
+                    cell.vw_BG.backgroundColor = COLOR_White
+                    cell.lbl_Name.textColor = COLOR_Black
+                }
                 
                 return cell
             }
@@ -173,12 +362,20 @@ extension ImageVW: UICollectionViewDelegate, UICollectionViewDataSource, UIColle
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
         if collectionView == self.clc_Menu {
-            
-            self.index_Selected = indexPath.row
-            self.action_SelectOption(index: self.index_Selected)
+                        
+            self.action_SelectOption(index: indexPath.row)
         }
         else {
             
+            if self.menu_Selected == kMENUIMAGE_Image {
+                
+                self.delegate?.image?(view: self, changeImage: (self.muary_Content.object(at: indexPath.row) as! String))
+            }
+            else {
+                
+                self.adjustType = ImageAdjustment(rawValue: indexPath.row)!
+                self.action_SelectAdjustmentOption()
+            }
         }
     }
 }

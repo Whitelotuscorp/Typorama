@@ -25,13 +25,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
         
-        if let status = UIApplication.shared.value(forKey: "statusBar") as? UIView {
-            status.backgroundColor = COLOR_Cream
-        }
-        print(AppSingletonObj.getFilePath(filename: ""))
+        // Local database configuration
+        DataManager.copyDBIfNeeded()
         
+        // Local database upgrade version mapping
+        DataManager.upgradeDatabaseIfRequired()       
         
         FIRApp.configure()
         

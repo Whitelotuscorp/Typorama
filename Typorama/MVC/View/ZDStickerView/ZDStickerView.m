@@ -10,9 +10,9 @@
 #import "SPGripViewBorderView.h"
 
 
-#define kSPUserResizableViewGlobalInset 0.0
-#define kSPUserResizableViewDefaultMinWidth 60.0
-#define kSPUserResizableViewInteractiveBorderSize 0.0
+#define kSPUserResizableViewGlobalInset 5.0
+#define kSPUserResizableViewDefaultMinWidth 48.0
+#define kSPUserResizableViewInteractiveBorderSize 10.0
 #define kZDStickerViewControlSize 36.0
 #define kZDStickerViewControlIconSize 22.0
 
@@ -80,8 +80,6 @@
     }
 }
 
-
-
 - (void)customTap:(UIPanGestureRecognizer *)recognizer
 {
     if (NO == self.preventsCustomButton)
@@ -97,32 +95,6 @@ static CGRect boundsBeforeScaling;
 static CGAffineTransform transformBeforeScaling;
 
 - (void)pinchTranslate:(UIPinchGestureRecognizer *)recognizer {
-    
-//    recognizer.view.transform = CGAffineTransformScale(recognizer.view.transform,
-//                                                       recognizer.scale,
-//                                                       recognizer.scale);
-//    recognizer.scale = 1;
-//
-//
-//    self.borderView.frame = CGRectInset(self.bounds,
-//                                        kSPUserResizableViewGlobalInset,
-//                                        kSPUserResizableViewGlobalInset);
-//
-//    self.resizingControl.frame =CGRectMake(self.bounds.size.width-(kZDStickerViewControlSize-3),
-//                                           self.bounds.size.height-(kZDStickerViewControlSize-3),
-//                                           kZDStickerViewControlSize,
-//                                           kZDStickerViewControlSize);
-//
-//    self.deleteControl.frame = CGRectMake(-3, -3,
-//                                          kZDStickerViewControlSize, kZDStickerViewControlSize);
-//
-//    self.customControl.frame =CGRectMake(self.bounds.size.width-kZDStickerViewControlIconSize/2,
-//                                         0,
-//                                         kZDStickerViewControlSize,
-//                                         kZDStickerViewControlSize);
-//
-//    [self.borderView setNeedsDisplay];
-    
 
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         boundsBeforeScaling = recognizer.view.bounds;
@@ -140,10 +112,19 @@ static CGAffineTransform transformBeforeScaling;
                                center.y - frame.size.height / 2);
 
     recognizer.view.transform = CGAffineTransformIdentity;
-    recognizer.view.frame = frame;
+    
+    if (frame.size.width < self.superview.bounds.size.width * 2 && frame.size.height < self.superview.bounds.size.height * 2) {
+     
+        recognizer.view.frame = frame;
+    }
     recognizer.view.transform = transformBeforeScaling;
     
-//    recognizer.scale = 1;
+    if ([recognizer state] == UIGestureRecognizerStateEnded)
+    {
+        if ([self.stickerViewDelegate respondsToSelector:@selector(stickerViewDidEndEditing:)]) {
+            [self.stickerViewDelegate stickerViewDidEndEditing:self];
+        }
+    }
 }
 
 - (void)rotateTranslate:(UIRotationGestureRecognizer *)recognizer {
@@ -151,8 +132,14 @@ static CGAffineTransform transformBeforeScaling;
     recognizer.view.transform = CGAffineTransformRotate(recognizer.view.transform, recognizer.rotation);
     recognizer.rotation = 0;
     
-//    boundsBeforeScaling = recognizer.view.bounds;
     transformBeforeScaling = recognizer.view.transform;
+    
+    if ([recognizer state] == UIGestureRecognizerStateEnded)
+    {
+        if ([self.stickerViewDelegate respondsToSelector:@selector(stickerViewDidEndEditing:)]) {
+            [self.stickerViewDelegate stickerViewDidEndEditing:self];
+        }
+    }
 }
 
 - (void)resizeTranslate:(UIPanGestureRecognizer *)recognizer
@@ -182,29 +169,27 @@ static CGAffineTransform transformBeforeScaling;
         
         hChange = wRatioChange * self.bounds.size.height;
         
-        if (self.bounds.size.width + (wChange) > self.minWidth && self.bounds.size.height + (hChange) > self.minHeight) {
+        if (self.bounds.size.width + (wChange) > self.superview.bounds.size.width * 2 || self.bounds.size.height + (hChange) > self.superview.bounds.size.height * 2) {
+            
+        }
+        else if (self.bounds.size.width + (wChange) > self.minWidth && self.bounds.size.height + (hChange) > self.minHeight) {
             
             self.bounds = CGRectMake(self.bounds.origin.x, self.bounds.origin.y,
                                      self.bounds.size.width + (wChange),
                                      self.bounds.size.height + (hChange));
             
             
-            self.borderView.frame = CGRectInset(self.bounds,
-                                                kSPUserResizableViewGlobalInset,
-                                                kSPUserResizableViewGlobalInset);
-            
-            self.resizingControl.frame =CGRectMake(self.bounds.size.width-(kZDStickerViewControlSize-3),
-                                                   self.bounds.size.height-(kZDStickerViewControlSize-3),
+            self.resizingControl.frame =CGRectMake(self.bounds.size.width-kZDStickerViewControlSize,
+                                                   self.bounds.size.height-kZDStickerViewControlSize,
                                                    kZDStickerViewControlSize,
                                                    kZDStickerViewControlSize);
-            
-            self.deleteControl.frame = CGRectMake(-3, -3,
+            self.deleteControl.frame = CGRectMake(0, 0,
                                                   kZDStickerViewControlSize, kZDStickerViewControlSize);
-            
-            self.customControl.frame =CGRectMake(self.bounds.size.width+kZDStickerViewControlSize-kZDStickerViewControlIconSize/2,
+            self.customControl.frame =CGRectMake(self.bounds.size.width-kZDStickerViewControlSize,
                                                  0,
                                                  kZDStickerViewControlSize,
                                                  kZDStickerViewControlSize);
+
         }
         
         self.prevPoint = [recognizer locationOfTouch:0 inView:self];
@@ -214,7 +199,7 @@ static CGAffineTransform transformBeforeScaling;
                           [recognizer locationInView:self.superview].x - self.center.x);
         
 //        NSLog(@"%f", ang);
-        float angleDiff = self.deltaAngle + 0.75 - ang;
+        float angleDiff = self.deltaAngle - ang;
         
         if (NO == self.preventsResizing)
         {
@@ -263,6 +248,7 @@ static CGAffineTransform transformBeforeScaling;
 
 - (void)setupDefaultAttributes {
     
+    self.logoID = @"";
     self.borderView = [[SPGripViewBorderView alloc] initWithFrame:CGRectInset(self.bounds, kSPUserResizableViewGlobalInset, kSPUserResizableViewGlobalInset)];
     self.borderView.borderColor = self.borderColor;
     self.borderView.borderWidth = self.borderWidth;
@@ -296,7 +282,7 @@ static CGAffineTransform transformBeforeScaling;
 #endif
 
     self.deleteControl = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0,
-                                                                      kZDStickerViewControlSize, kZDStickerViewControlSize)];
+    kZDStickerViewControlSize, kZDStickerViewControlSize)];
     self.deleteControl.backgroundColor = [UIColor clearColor];
     self.deleteControl.image = [UIImage imageNamed:@"ZDStickerView.bundle/ZDBtn3.png"];
     self.deleteControl.userInteractionEnabled = YES;
@@ -307,10 +293,10 @@ static CGAffineTransform transformBeforeScaling;
     [self addSubview:self.deleteControl];
     self.deleteControl.contentMode = UIViewContentModeTopLeft;
     
-    self.resizingControl = [[UIImageView alloc]initWithFrame:CGRectMake(self.bounds.size.width-(kZDStickerViewControlSize-3),
-                                                                        self.bounds.size.height-(kZDStickerViewControlSize-3),
-                                                                        kZDStickerViewControlSize,
-                                                                        kZDStickerViewControlSize)];
+    self.resizingControl = [[UIImageView alloc]initWithFrame:CGRectMake(self.frame.size.width-kZDStickerViewControlSize,
+    self.frame.size.height-kZDStickerViewControlSize,
+    kZDStickerViewControlSize, kZDStickerViewControlSize)];
+    
     self.resizingControl.backgroundColor = [UIColor clearColor];
     self.resizingControl.userInteractionEnabled = YES;
     self.resizingControl.image = [UIImage imageNamed:@"ZDStickerView.bundle/ZDBtn2.png"];
@@ -357,6 +343,12 @@ static CGAffineTransform transformBeforeScaling;
                             self.frame.origin.x+self.frame.size.width - self.center.x);
 }
 
+- (void)updateDelta {
+    
+    self.deltaAngle = atan2(self.frame.origin.y+self.frame.size.height - self.center.y,
+    self.frame.origin.x+self.frame.size.width - self.center.x);
+}
+
 - (id)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame]))
@@ -383,8 +375,8 @@ static CGAffineTransform transformBeforeScaling;
     _shadowView = newShadowView;
     
     self.shadowView.frame = CGRectInset(self.bounds,
-                                        kSPUserResizableViewGlobalInset + 15 + kSPUserResizableViewInteractiveBorderSize/2,
-                                        kSPUserResizableViewGlobalInset + 15 + kSPUserResizableViewInteractiveBorderSize/2);
+                                        kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
+                                        kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
     
     self.shadowView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;    
     [self addSubview:self.shadowView];
@@ -414,9 +406,9 @@ static CGAffineTransform transformBeforeScaling;
     _contentView = newContentView;
 
     self.contentView.frame = CGRectInset(self.bounds,
-                                         kSPUserResizableViewGlobalInset + 15 + kSPUserResizableViewInteractiveBorderSize/2,
-                                         kSPUserResizableViewGlobalInset + 15 + kSPUserResizableViewInteractiveBorderSize/2);
-    
+                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
+                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
+
     self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 //printf(self.contentView.frame)
     [self addSubview:self.contentView];
@@ -443,8 +435,8 @@ static CGAffineTransform transformBeforeScaling;
 {
     [super setFrame:newFrame];
     self.contentView.frame = CGRectInset(self.bounds,
-                                         kSPUserResizableViewGlobalInset + 15 + kSPUserResizableViewInteractiveBorderSize/2,
-                                         kSPUserResizableViewGlobalInset + 15 + kSPUserResizableViewInteractiveBorderSize/2);
+                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
+                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
 
     self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
@@ -462,8 +454,8 @@ static CGAffineTransform transformBeforeScaling;
     
     
     self.shadowView.frame = CGRectInset(self.bounds,
-                                         kSPUserResizableViewGlobalInset + 15 + kSPUserResizableViewInteractiveBorderSize/2,
-                                         kSPUserResizableViewGlobalInset + 15 + kSPUserResizableViewInteractiveBorderSize/2);
+                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
+                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
     
     self.shadowView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
@@ -479,21 +471,19 @@ static CGAffineTransform transformBeforeScaling;
         }
     }
     
-    
-
     self.borderView.frame = CGRectInset(self.bounds,
                                         kSPUserResizableViewGlobalInset,
                                         kSPUserResizableViewGlobalInset);
 
-    self.resizingControl.frame =CGRectMake(self.bounds.size.width-(kZDStickerViewControlSize-3),
-                                           self.bounds.size.height-(kZDStickerViewControlSize-3),
+    self.resizingControl.frame =CGRectMake(self.bounds.size.width-kZDStickerViewControlSize,
+                                           self.bounds.size.height-kZDStickerViewControlSize,
                                            kZDStickerViewControlSize,
                                            kZDStickerViewControlSize);
 
-    self.deleteControl.frame = CGRectMake(-3, -3,
+    self.deleteControl.frame = CGRectMake(0, 0,
                                           kZDStickerViewControlSize, kZDStickerViewControlSize);
 
-    self.customControl.frame =CGRectMake(self.bounds.size.width-kZDStickerViewControlIconSize/2,
+    self.customControl.frame =CGRectMake(self.bounds.size.width-kZDStickerViewControlSize,
                                          0,
                                          kZDStickerViewControlSize,
                                          kZDStickerViewControlSize);
@@ -550,27 +540,27 @@ static CGAffineTransform transformBeforeScaling;
     if (self.preventsPositionOutsideSuperview)
     {
         // Ensure the translation won't cause the view to move offscreen.
-        CGFloat midPointX = CGRectGetMidX(self.bounds);
-        if (newCenter.x > self.superview.bounds.size.width - midPointX)
-        {
-            newCenter.x = self.superview.bounds.size.width - midPointX;
-        }
-
-        if (newCenter.x < midPointX)
-        {
-            newCenter.x = midPointX;
-        }
-
-        CGFloat midPointY = CGRectGetMidY(self.bounds);
-        if (newCenter.y > self.superview.bounds.size.height - midPointY)
-        {
-            newCenter.y = self.superview.bounds.size.height - midPointY;
-        }
-
-        if (newCenter.y < midPointY)
-        {
-            newCenter.y = midPointY;
-        }
+//        CGFloat midPointX = CGRectGetMidX(self.bounds);
+//        if (newCenter.x > self.superview.bounds.size.width - midPointX)
+//        {
+//            newCenter.x = self.superview.bounds.size.width - midPointX;
+//        }
+//
+//        if (newCenter.x < midPointX)
+//        {
+//            newCenter.x = midPointX;
+//        }
+//
+//        CGFloat midPointY = CGRectGetMidY(self.bounds);
+//        if (newCenter.y > self.superview.bounds.size.height - midPointY)
+//        {
+//            newCenter.y = self.superview.bounds.size.height - midPointY;
+//        }
+//
+//        if (newCenter.y < midPointY)
+//        {
+//            newCenter.y = midPointY;
+//        }
     }
     else {
         

@@ -224,7 +224,7 @@ class PhotosAlbum: NSObject {
         
         PHPhotoLibrary.shared().performChanges({
             
-            let path = AppSingletonObj.getFilePath(filename: "temp.png")
+            let path = AppSingletonObj.getPath(filename: "temp.png")
             AppSingletonObj.writeFile(filePath: path, data: image.pngData() as NSData?)
             
             let createAssetRequest = PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: URL(fileURLWithPath: path))

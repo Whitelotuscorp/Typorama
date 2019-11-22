@@ -10,30 +10,45 @@ import UIKit
 import Photos
 import IGRPhotoTweaks
 
+@objc protocol BackGroundVCDelegate: class {
+    
+    @objc optional func backGround(vc: BackGround_VC, ChangeColor color: UIColor)
+}
+ 
 class BackGround_VC: UIViewController {
 
-    @IBOutlet weak var clc_Canvas: UICollectionView!
+    weak var delegate : BackGroundVCDelegate?
     
+    @IBOutlet weak var vw_Nav: UIView!
+    
+    @IBOutlet weak var clc_Canvas: UICollectionView!
     @IBOutlet weak var clc_Category: UICollectionView!
     
-    @IBOutlet weak var vw_Crop: CropView!
+    @IBOutlet weak var lbl: UILabel!
     
-    @IBOutlet weak var vw_ImageBG: UIView!
-    @IBOutlet weak var imgvw_Crop: UIImageView!
+    @IBOutlet weak var btn_Close: UIButton!
     
     var muary_Cat = NSMutableArray()
     var muary_Canvas = NSMutableArray()
     
     var allPhotos : [infoPhoto] = []
     
-    var selected_IndexPathCat : IndexPath = IndexPath(item: 0, section: 0)
+    var selected_Cat : String = ""
+    
+    let w_CellCat : CGFloat = 120
+    
+    var color_Selected : UIColor = UIColor.clear
+    
+    var isAutoScroll : Bool = false
+    var isFromEditor : Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.muary_Cat = NSMutableArray(array: ARRAY_Category)
-        self.muary_Canvas = NSMutableArray(array: ARRAY_Color)
-        self.muary_Canvas.insert(UIColor.clear, at: 0)
+        self.view.backgroundColor = COLOR_Cream
+        
+        self.btn_Close.titleLabel?.font = UIFont.fontAwesome(ofSize: APPFONT_Size17, style: .solid)
+        self.btn_Close.setTitle(String.fontAwesomeIcon(name: FontAwesome.longArrowAltLeft), for: .normal)
         
         let nib_CellCat = UINib(nibName: "cell_c_BGCat", bundle: nil)
         self.clc_Category.register(nib_CellCat, forCellWithReuseIdentifier: "cell_c_BGCat")
@@ -41,7 +56,7 @@ class BackGround_VC: UIViewController {
         let nib_CellCan = UINib(nibName: "cell_c_BGCanvas", bundle: nil)
         self.clc_Canvas.register(nib_CellCan, forCellWithReuseIdentifier: "cell_c_BGCanvas")
         
-        let w_CellCat : CGFloat = 120
+        
         let leftInset = (self.view.frame.width - w_CellCat) / 2
         let rightInset = leftInset
         
@@ -50,6 +65,7 @@ class BackGround_VC: UIViewController {
         layout_Cat.sectionInset = UIEdgeInsets(top: 0, left: leftInset, bottom: 0, right: rightInset)
         self.clc_Category.collectionViewLayout = layout_Cat
         
+        self.updateLayoutCategory()
         var w_Canvas = self.view.frame.width / 3.0
         
         if UIDevice.current.userInterfaceIdiom == .pad {
@@ -60,9 +76,20 @@ class BackGround_VC: UIViewController {
         let layout_Canvas = self.clc_Canvas.collectionViewLayout as! UICollectionViewFlowLayout
         layout_Canvas.itemSize = CGSize(width: w_Canvas, height: w_Canvas)
         self.clc_Canvas.collectionViewLayout = layout_Canvas
+                        
         
-        self.vw_Crop.isHidden = true
-//        self.vw_Crop.delegate = self
+        if self.isFromEditor == true {
+            
+            self.muary_Cat = NSMutableArray(array: [kBGIMAGE_COLORS])
+            self.vw_Nav.isHidden = false
+        }
+        else {
+            
+            self.muary_Cat = NSMutableArray(array: ARRAY_Category)
+            self.vw_Nav.isHidden = true
+        }
+        
+        self.loadCatWiseData(indexPath: IndexPath(row: 0, section: 0))
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -73,6 +100,25 @@ class BackGround_VC: UIViewController {
         super.viewDidAppear(animated)
         
         self.clc_Category.reloadData()
+        
+        print(lbl.font.familyName)
+        print(lbl.font.fontName)
+    }
+    
+    func updateLayoutCategory(isInset: Bool = false) {
+        
+        let leftInset = isInset == true ? 0 : (self.view.frame.width - w_CellCat) / 2
+        let rightInset = leftInset
+        
+        let layout_Cat = self.clc_Category.collectionViewLayout as! UICollectionViewFlowLayout
+        layout_Cat.itemSize = CGSize(width: w_CellCat, height: 40.0)
+        layout_Cat.sectionInset = UIEdgeInsets(top: 0, left: leftInset, bottom: 0, right: rightInset)
+        self.clc_Category.collectionViewLayout = layout_Cat
+    }
+    
+    @IBAction func action_Close(_ sender: UIButton) {
+     
+        self.dismiss(animated: true, completion: nil)
     }
 }
 
@@ -84,7 +130,7 @@ extension BackGround_VC: UICollectionViewDelegate, UICollectionViewDataSource, U
             
             return self.muary_Cat.count
         }
-        else if self.selected_IndexPathCat.row == 2 {
+        else if self.selected_Cat == kBGIMAGE_PHOTOS {
             
             return self.allPhotos.count
         }
@@ -102,7 +148,7 @@ extension BackGround_VC: UICollectionViewDelegate, UICollectionViewDataSource, U
             cell.lbl_Name.text = (self.muary_Cat.object(at: indexPath.row) as! String)
             
             cell.lbl_Line.isHidden = true
-            if selected_IndexPathCat == indexPath {
+            if selected_Cat == cell.lbl_Name.text {
                 
                 cell.lbl_Line.isHidden = false
             }
@@ -115,7 +161,7 @@ extension BackGround_VC: UICollectionViewDelegate, UICollectionViewDataSource, U
             
             cell.lbl_Text.isHidden = indexPath.row == 0 ? false : true
             
-            if self.selected_IndexPathCat.row == 2 {
+            if self.selected_Cat == kBGIMAGE_PHOTOS {
                 
                 cell.imgvw_Trans.isHidden = false
                 cell.imgvw_Trans.contentMode = .scaleAspectFill
@@ -172,16 +218,28 @@ extension BackGround_VC: UICollectionViewDelegate, UICollectionViewDataSource, U
     
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         
-        self.clc_Category.scrollToItem(at: self.selected_IndexPathCat, at: UICollectionView.ScrollPosition.centeredHorizontally, animated: true)
+        if self.isAutoScroll == false && (scrollView as? UICollectionView) == self.clc_Category {
+            
+            self.updateLayoutCategory(isInset: true)
+        }
+        self.isAutoScroll = false
     }
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-     
-        self.clc_Category.scrollToItem(at: self.selected_IndexPathCat, at: UICollectionView.ScrollPosition.centeredHorizontally, animated: true)
+        
+        if self.isAutoScroll == false && (scrollView as? UICollectionView) == self.clc_Category {
+            
+            self.updateLayoutCategory(isInset: true)
+        }
+        self.isAutoScroll = false
     }
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     
+        self.color_Selected = .clear
         if collectionView == self.clc_Category {
             
+            self.updateLayoutCategory()
+            self.isAutoScroll = true
             self.loadCatWiseData(indexPath: indexPath)
             
             collectionView.reloadData()
@@ -192,12 +250,13 @@ extension BackGround_VC: UICollectionViewDelegate, UICollectionViewDataSource, U
             let obj_Crop_VC = self.storyboard?.instantiateViewController(withIdentifier: "Crop_VC") as! Crop_VC
             obj_Crop_VC.imageBG = AppSingletonObj.takeScreenShotMethod(view: self.view)
             obj_Crop_VC.delegate = self
+            obj_Crop_VC.modalPresentationStyle = .fullScreen
             
-            if self.selected_IndexPathCat.row == 2 && indexPath.row == 0 {
+            if self.selected_Cat == kBGIMAGE_PHOTOS && indexPath.row == 0 {
                 
                 AppSingletonObj.action_ChoosePhoto(type: .photoLibrary, With: self)
             }
-            else if self.selected_IndexPathCat.row == 2 {
+            else if self.selected_Cat == kBGIMAGE_PHOTOS {
                 
                 AppSingletonObj.manageMBProgress(isShow: true)
                 let info_Pic = self.allPhotos[indexPath.row]
@@ -215,24 +274,34 @@ extension BackGround_VC: UICollectionViewDelegate, UICollectionViewDataSource, U
             }
             else {
                 
-                let w_Screen = UIScreen.main.bounds.width
-                let h_Screen = UIScreen.main.bounds.height
-                let h_Bottom : CGFloat = (AppDelegateObj.window?.safeAreaInsets.bottom)!
-                let h_StatusBar = UIApplication.shared.statusBarFrame.height + 35 + 162 + 40 + h_Bottom
+                self.color_Selected = self.muary_Canvas.object(at: indexPath.row) as! UIColor
                 
-                let color_Selected = self.muary_Canvas.object(at: indexPath.row) as! UIColor
-                
-                obj_Crop_VC.image = AppSingletonObj.createImage(color: color_Selected, size: CGSize(width: w_Screen, height: h_Screen - h_StatusBar))
-                self.present(obj_Crop_VC, animated: false, completion: nil)
+                if self.isFromEditor == true {
+                    
+                    self.dismiss(animated: true) {
+                        
+                        self.delegate?.backGround?(vc: self, ChangeColor: self.color_Selected)
+                    }
+                }
+                else {
+                 
+                    let w_Screen = UIScreen.main.bounds.width
+                    let h_Screen = UIScreen.main.bounds.height
+                    let h_Bottom : CGFloat = (AppDelegateObj.window?.safeAreaInsets.bottom)!
+                    let h_StatusBar = UIApplication.shared.statusBarFrame.height + 35 + 162 + 40 + h_Bottom
+                                    
+                    obj_Crop_VC.image = AppSingletonObj.createImage(color: self.color_Selected, size: CGSize(width: w_Screen, height: h_Screen - h_StatusBar))
+                    self.present(obj_Crop_VC, animated: false, completion: nil)
+                }
             }
         }
     }
     
     func loadCatWiseData(indexPath: IndexPath) {
         
-        self.selected_IndexPathCat = indexPath
+        self.selected_Cat = (self.muary_Cat.object(at: indexPath.row) as! String)
         
-        if self.selected_IndexPathCat.row == 2 {
+        if self.selected_Cat == kBGIMAGE_PHOTOS {
             
             DispatchQueue.main.async(execute: { () -> Void in
                 
@@ -243,6 +312,8 @@ extension BackGround_VC: UICollectionViewDelegate, UICollectionViewDataSource, U
         }
         else {
             
+            self.muary_Canvas = NSMutableArray(array: ARRAY_Color)
+            self.muary_Canvas.insert(UIColor.clear, at: 0)
         }
         
         self.clc_Canvas.reloadData()
@@ -290,7 +361,7 @@ extension BackGround_VC: UIImagePickerControllerDelegate, UINavigationController
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
-        let image = info[UIImagePickerController.InfoKey.editedImage]
+        let image = info[UIImagePickerController.InfoKey.originalImage]
         
         picker.dismiss(animated: true) {
          
@@ -298,6 +369,7 @@ extension BackGround_VC: UIImagePickerControllerDelegate, UINavigationController
             obj_Crop_VC.imageBG = AppSingletonObj.takeScreenShotMethod(view: self.view)
             obj_Crop_VC.delegate = self
             obj_Crop_VC.image = (image as! UIImage)
+            obj_Crop_VC.modalPresentationStyle = .fullScreen
             self.present(obj_Crop_VC, animated: false, completion: nil)
         }
     }
@@ -327,9 +399,9 @@ extension BackGround_VC: IGRPhotoTweakViewControllerDelegate {
     func photoTweaksController(_ controller: IGRPhotoTweakViewController, didFinishWithCroppedImage croppedImage: UIImage) {
 
         let obj_Editor_VC = self.storyboard?.instantiateViewController(withIdentifier: "Editor_VC") as! Editor_VC
-        obj_Editor_VC.info_Image = infoImage(size: controller.sizeFrame, color: UIColor.clear, image: croppedImage, type: ImageType.IMAGE)
+        obj_Editor_VC.info_Image = infoImage(size: controller.sizeFrame, color: self.color_Selected, image: croppedImage, type: ImageType.IMAGE)
 
-        controller.dismiss(animated: false) {
+        controller.dismiss(animated: true) {
          
             self.navigationController?.pushViewController(obj_Editor_VC, animated: true)
         }
@@ -337,6 +409,6 @@ extension BackGround_VC: IGRPhotoTweakViewControllerDelegate {
     
     func photoTweaksControllerDidCancel(_ controller: IGRPhotoTweakViewController) {
         
-        controller.dismiss(animated: false, completion: nil)
+        controller.dismiss(animated: true, completion: nil)
     }
 }

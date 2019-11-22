@@ -7,8 +7,15 @@
 
 import UIKit
 
+@objc protocol TactileSliderWDelegate: class {
+    
+    @objc optional func tactileSlider(slider: TactileSlider, DidTapAt value: Float)
+}
+
 @IBDesignable open class TactileSlider: UIControl {
 	
+    weak var delegate : TactileSliderWDelegate?
+    
 	private enum Direction {
 		case rightToLeft
 		case leftToRight
@@ -309,7 +316,7 @@ import UIKit
 	}
 	
 	@objc func didTap(sender: UITapGestureRecognizer) {
-		guard enableTapping else { return }
+//		guard enableTapping else { return }
 		
 		if sender.state == .ended {
 			let tapLocation: CGFloat
@@ -320,8 +327,11 @@ import UIKit
 				tapLocation = valueAxisFrom(sender.location(in: self), accountForDirection: false)
 			}
 			let tappedValue = valueForPosition(tapLocation)
-			setValue(tappedValue, animated: true)
-			sendActions(for: .valueChanged)
+            
+            self.delegate?.tactileSlider?(slider: self, DidTapAt: tappedValue)
+            
+//			setValue(tappedValue, animated: true)
+//			sendActions(for: .valueChanged)
 		}
 	}
 	

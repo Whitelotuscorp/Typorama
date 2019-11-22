@@ -144,9 +144,10 @@ class SavePhoto: NSObject {
     
     func gaussianBlur(image: UIImage, radius: CGFloat) -> UIImage {
 
-        let gaussianBlur = GPUImageGaussianBlurFilter()
-        gaussianBlur.blurRadiusInPixels = radius
-        return gaussianBlur.image(byFilteringImage: image)
+        let gaussianBlur = GaussianBlur()
+        gaussianBlur.blurRadiusInPixels = Float(radius)
+        
+        return image.filterWithOperation(gaussianBlur)
     }
     
     func mergeAllLayer(view: UIView?, With imageview: UIImageView?, completionBlock: @escaping (_ image: UIImage?) -> Void) {
@@ -187,7 +188,7 @@ class SavePhoto: NSObject {
                 
                 let area_LY = CGRect(x: x_LY, y: y_LY, width: w_LY, height: h_LY)
                 
-                let img_LyMain = self.getNewLayer(layer: infoL, info: infoL.style, size: CGSize(width: w_LY, height: h_LY))
+                let img_LyMain = infoL.image //self.getNewLayer(layer: infoL, info: infoL.style, size: CGSize(width: w_LY, height: h_LY))
                 
                 if infoL.shadow.isShadow == true {
 
@@ -195,7 +196,7 @@ class SavePhoto: NSObject {
                     let y_SD: CGFloat = ((layer.frame.origin.y + infoL.shadow.y) * size!.height) / imageview!.frame.size.height
 
                     let area_SD = CGRect(x: x_SD, y: y_SD, width: w_LY, height: h_LY)
-                    let img_SDMain = self.getNewShadowLayer(layer: infoL, image: img_LyMain)
+                    let img_SDMain = (layer.shadowView as! UIImageView).image //self.getNewShadowLayer(layer: infoL, image: img_LyMain)
                     
                     let img_SD = self.rotateImage(img_SDMain, withTransform: transform)!
                     img_SD.draw(in: area_SD, blendMode: .normal, alpha: infoL.shadow.opacity)

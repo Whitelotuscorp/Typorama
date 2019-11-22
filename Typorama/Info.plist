@@ -17,7 +17,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
-	<string>1.0.35</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -45,6 +45,19 @@
 		<string>Londrina Solid.otf</string>
 		<string>Matiz.ttf</string>
 		<string>Muro.otf</string>
+		<string>ee_nobblee_regular.ttf</string>
+		<string>ee_nobblee_bold.ttf</string>
+		<string>BebasNeue-Regular.ttf</string>
+		<string>budmo_jiggler.ttf</string>
+		<string>budmo_jigglish.ttf</string>
+		<string>Roboto-BoldCondensedItalic.ttf</string>
+		<string>Roboto-CondensedItalic.ttf</string>
+		<string>Roboto-Bold.ttf</string>
+		<string>Roboto-Thin.ttf</string>
+		<string>Steelfish-BoldItalic.ttf</string>
+		<string>Steelfish-Italic.ttf</string>
+		<string>Photograph-Signature.ttf</string>
+		<string>LOKICOLA.TTF</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -56,6 +69,8 @@
 	</array>
 	<key>UIStatusBarHidden</key>
 	<false/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleDarkContent</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

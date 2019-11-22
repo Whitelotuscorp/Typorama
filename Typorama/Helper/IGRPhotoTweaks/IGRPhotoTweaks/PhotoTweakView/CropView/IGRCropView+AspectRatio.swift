@@ -15,7 +15,7 @@ extension IGRCropView {
         self.aspectRatioHeight = self.frame.size.height
     }
     
-    public func setCropAspectRect(aspect: String, maxSize: CGSize) {
+    public func setCropAspectRect(aspect: String, maxSize: CGSize) -> CGRect {
         let elements = aspect.components(separatedBy: ":")
         self.aspectRatioWidth = CGFloat(Float(elements.first!)!)
         self.aspectRatioHeight = CGFloat(Float(elements.last!)!)
@@ -34,7 +34,7 @@ extension IGRCropView {
         let x = (self.frame.size.width - size.width).half
         let y = (self.frame.size.height - size.height).half
         
-        self.frame = CGRect(x:x, y:y, width: size.width, height: size.height)
+        return CGRect(x:x, y:y, width: size.width, height: size.height)
     }
     
     public func lockAspectRatio(_ lock: Bool) {

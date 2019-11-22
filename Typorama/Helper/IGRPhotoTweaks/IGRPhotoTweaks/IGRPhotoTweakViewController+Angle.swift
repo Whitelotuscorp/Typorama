@@ -8,6 +8,7 @@
 
 import Foundation
 
+@available(iOS 11.0, *)
 extension IGRPhotoTweakViewController {
     public func changeAngle(radians: CGFloat) {
         self.photoView.changeAngle(radians: radians)

@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-
 typedef NS_ENUM(NSUInteger, ZDStickerViewButton) {
     ZDStickerViewButtonNull,
     ZDStickerViewButtonDel,
@@ -22,6 +21,7 @@ typedef NS_ENUM(NSUInteger, ZDStickerViewButton) {
 @interface ZDStickerView : UIView
 
 @property (nonatomic,strong) id info;
+@property (nonatomic,strong) NSString *logoID;
 
 @property (nonatomic, strong) UIView *contentView;
 @property (nonatomic, strong) UIView *shadowView;
@@ -46,6 +46,7 @@ typedef NS_ENUM(NSUInteger, ZDStickerViewButton) {
 
 @property (weak, nonatomic) id <ZDStickerViewDelegate> stickerViewDelegate;
 
+- (void)updateDelta;
 - (void)hideDelHandle;
 - (void)showDelHandle;
 - (void)hideEditingHandles;

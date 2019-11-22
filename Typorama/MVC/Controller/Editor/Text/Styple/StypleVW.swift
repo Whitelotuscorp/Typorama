@@ -21,7 +21,7 @@ class StypleVW: UIView {
 
     @IBOutlet weak var clc_Style: UICollectionView!
 
-    var muary_Layer : [infoStyle] = [infoStyle.setLayerInfoNone(text: [""]), infoStyle.setLayerInfoSolid(text: [""])]
+    var muary_Layer : [infoStyle] = StyleList.getStyleList()
     
     override func draw(_ rect: CGRect) {
         // Drawing code

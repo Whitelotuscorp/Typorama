@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina6_1" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="GradientVW" customModule="Typorama" customModuleProvider="target">
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="GradientVW" customModule="Posterooh" customModuleProvider="target">
             <connections>
                 <outlet property="contentView" destination="9ES-cq-aUG" id="X2M-YX-uCL"/>
                 <outlet property="lbl_Direction" destination="Y80-p8-HZO" id="WAP-Vo-01Q"/>
                 <outlet property="lbl_Gradient" destination="Ky0-dW-C3C" id="6ZY-Lo-hzO"/>
                 <outlet property="sld_Direction" destination="rdq-sI-jeb" id="fFn-gK-NOE"/>
+                <outlet property="sld_Ratio" destination="z2E-Bo-gXT" id="keq-TL-c4X"/>
+                <outlet property="swtch_Gradient" destination="Esn-EZ-z3t" id="FJf-1r-fg9"/>
             </connections>
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view contentMode="scaleToFill" id="9ES-cq-aUG">
-            <rect key="frame" x="0.0" y="0.0" width="414" height="100"/>
+            <rect key="frame" x="0.0" y="0.0" width="414" height="113"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DIRECTION" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Y80-p8-HZO">
-                    <rect key="frame" x="10" y="65" width="87.5" height="25"/>
+                    <rect key="frame" x="10" y="78" width="87.5" height="25"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="25" id="5gB-mU-2tj"/>
                     </constraints>
@@ -33,7 +33,7 @@
                     <nil key="highlightedColor"/>
                 </label>
                 <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ENABLE GRADIENT" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ky0-dW-C3C">
-                    <rect key="frame" x="324" y="10" width="80" height="80"/>
+                    <rect key="frame" x="311" y="10" width="93" height="93"/>
                     <constraints>
                         <constraint firstAttribute="width" secondItem="Ky0-dW-C3C" secondAttribute="height" multiplier="1:1" id="Hr0-ae-PhS"/>
                     </constraints>
@@ -41,25 +41,50 @@
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="rdq-sI-jeb">
-                    <rect key="frame" x="105.5" y="62.5" width="210.5" height="31"/>
+                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="45" minValue="45" maxValue="405" translatesAutoresizingMaskIntoConstraints="NO" id="rdq-sI-jeb">
+                    <rect key="frame" x="105.5" y="75.5" width="197.5" height="31"/>
                     <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <connections>
+                        <action selector="action_ChangeDirection:" destination="-1" eventType="valueChanged" id="m0v-fn-S4M"/>
+                    </connections>
                 </slider>
-                <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="y6i-zC-0aK">
-                    <rect key="frame" x="10" y="10" width="304" height="46"/>
-                    <segments>
-                        <segment title="First"/>
-                        <segment title="Second"/>
-                    </segments>
-                    <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                </segmentedControl>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="z2E-Bo-gXT" customClass="TactileSlider" customModule="Posterooh" customModuleProvider="target">
+                    <rect key="frame" x="10" y="15" width="291" height="48"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                            <real key="value" value="8"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="boolean" keyPath="vertical" value="NO"/>
+                        <userDefinedRuntimeAttribute type="boolean" keyPath="enableTapping" value="NO"/>
+                        <userDefinedRuntimeAttribute type="color" keyPath="trackBackground">
+                            <color key="value" systemColor="systemGreenColor" red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="color" keyPath="thumbTint">
+                            <color key="value" systemColor="systemPinkColor" red="1" green="0.1764705882" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="number" keyPath="minimum">
+                            <real key="value" value="0.0"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="number" keyPath="maximum">
+                            <real key="value" value="1"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="number" keyPath="value">
+                            <real key="value" value="0.5"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="boolean" keyPath="reverseValueAxis" value="NO"/>
+                    </userDefinedRuntimeAttributes>
+                    <connections>
+                        <action selector="action_ChangeColorRatio:" destination="-1" eventType="valueChanged" id="ZGW-JP-EIS"/>
+                    </connections>
+                </view>
                 <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Esn-EZ-z3t">
-                    <rect key="frame" x="341" y="35" width="49" height="31"/>
+                    <rect key="frame" x="341" y="32" width="49" height="31"/>
                     <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <color key="onTintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <color key="thumbTintColor" red="0.74509803921568629" green="0.74509803921568629" blue="0.74509803921568629" alpha="1" colorSpace="calibratedRGB"/>
                     <connections>
-                        <action selector="action_ChangeValues:" destination="-1" eventType="touchUpInside" id="WMR-eI-aIp"/>
+                        <action selector="action_ChangeSwitch:" destination="-1" eventType="valueChanged" id="n9l-dF-YOL"/>
                     </connections>
                 </switch>
             </subviews>
@@ -67,24 +92,24 @@
             <constraints>
                 <constraint firstItem="Ky0-dW-C3C" firstAttribute="top" secondItem="9ES-cq-aUG" secondAttribute="top" constant="10" id="3Tr-sd-uXS"/>
                 <constraint firstItem="Y80-p8-HZO" firstAttribute="leading" secondItem="a4I-hw-zRc" secondAttribute="leading" constant="10" id="5c9-qV-sVe"/>
-                <constraint firstItem="Y80-p8-HZO" firstAttribute="top" secondItem="y6i-zC-0aK" secondAttribute="bottom" constant="10" id="7ns-Im-guq"/>
+                <constraint firstItem="z2E-Bo-gXT" firstAttribute="leading" secondItem="a4I-hw-zRc" secondAttribute="leading" constant="10" id="9yQ-Re-kSN"/>
                 <constraint firstItem="Esn-EZ-z3t" firstAttribute="centerY" secondItem="Ky0-dW-C3C" secondAttribute="centerY" id="AZY-tI-oKS"/>
-                <constraint firstItem="Ky0-dW-C3C" firstAttribute="leading" secondItem="y6i-zC-0aK" secondAttribute="trailing" constant="10" id="DYi-EN-nNc"/>
                 <constraint firstItem="Ky0-dW-C3C" firstAttribute="leading" secondItem="rdq-sI-jeb" secondAttribute="trailing" constant="10" id="Ekh-NM-Waa"/>
-                <constraint firstItem="y6i-zC-0aK" firstAttribute="top" secondItem="9ES-cq-aUG" secondAttribute="top" constant="10" id="adJ-hm-pUq"/>
+                <constraint firstItem="Ky0-dW-C3C" firstAttribute="leading" secondItem="z2E-Bo-gXT" secondAttribute="trailing" constant="10" id="Sw3-YK-mUy"/>
+                <constraint firstItem="Y80-p8-HZO" firstAttribute="top" secondItem="z2E-Bo-gXT" secondAttribute="bottom" constant="15" id="axn-0Z-gFc"/>
                 <constraint firstItem="rdq-sI-jeb" firstAttribute="centerY" secondItem="Y80-p8-HZO" secondAttribute="centerY" id="cth-By-9xg"/>
                 <constraint firstItem="a4I-hw-zRc" firstAttribute="trailing" secondItem="Ky0-dW-C3C" secondAttribute="trailing" constant="10" id="dg0-7c-Imf"/>
                 <constraint firstItem="Esn-EZ-z3t" firstAttribute="centerX" secondItem="Ky0-dW-C3C" secondAttribute="centerX" id="dkQ-aJ-0MW"/>
                 <constraint firstItem="rdq-sI-jeb" firstAttribute="leading" secondItem="Y80-p8-HZO" secondAttribute="trailing" constant="10" id="fy5-je-RVh"/>
-                <constraint firstItem="y6i-zC-0aK" firstAttribute="leading" secondItem="9ES-cq-aUG" secondAttribute="leading" constant="10" id="png-Z8-T7p"/>
                 <constraint firstAttribute="bottom" secondItem="Y80-p8-HZO" secondAttribute="bottom" constant="10" id="vgr-LT-bYN"/>
+                <constraint firstItem="z2E-Bo-gXT" firstAttribute="top" secondItem="9ES-cq-aUG" secondAttribute="top" constant="15" id="wll-KQ-SuJ"/>
                 <constraint firstAttribute="bottom" secondItem="Ky0-dW-C3C" secondAttribute="bottom" constant="10" id="ydr-j5-nHG"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <viewLayoutGuide key="safeArea" id="a4I-hw-zRc"/>
-            <point key="canvasLocation" x="53.623188405797109" y="-52.901785714285715"/>
+            <point key="canvasLocation" x="53.623188405797109" y="-57.254464285714285"/>
         </view>
     </objects>
 </document>

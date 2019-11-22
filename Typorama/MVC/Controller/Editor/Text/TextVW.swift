@@ -24,6 +24,8 @@ enum TextMenu : Int {
     @objc optional func text(view: TextVW, changeColor color: UIColor)
     
     @objc optional func text(view: TextVW, ChangeShadow value: Any, With type: ShadowValue)
+    
+    @objc optional func textDidChangeGradient(view: TextVW)
 }
 
 class TextVW: UIView {
@@ -47,6 +49,8 @@ class TextVW: UIView {
     var muary_Menu = NSMutableArray()
     
     var sizeCanvas : CGSize = CGSize.zero
+    
+    var isFisrtLoaded : Bool = false
     
     override func draw(_ rect: CGRect) {
         // Drawing code
@@ -98,6 +102,7 @@ class TextVW: UIView {
         self.vw_History.delegate = self
         self.vw_Color.delegate = self
         self.vw_Shadow.delegate = self
+        self.vw_Gradient.delegate = self
     }
     
     func setMenuArray() {
@@ -144,6 +149,7 @@ class TextVW: UIView {
         }
         else if menu == TextMenu.Gradient {
             
+            self.vw_Gradient.setCurrentValue(info: (self.currentLayer.info as! infoLayer).gradient)
             self.vw_Gradient.isHidden = false
         }
         else {
@@ -154,15 +160,14 @@ class TextVW: UIView {
     
     func addNewSticker() {
 
-        self.whenEditText()
-//        let info_Style = self.vw_Style.muary_Layer[0]
-//        self.delegate?.text?(view: self, changeStyle: info_Style)
-    }
-    
-    func whenEditText() {
         
         let info_Style = self.vw_Style.muary_Layer[0]
-        self.style(view: self.vw_Style, didSelected: info_Style)
+        self.whenEditText(style: info_Style)
+    }
+    
+    func whenEditText(style: infoStyle) {
+        
+        self.style(view: self.vw_Style, didSelected: style)
     }
     
     func layerDidBeginEditing(sticker: ZDStickerView) {
@@ -205,17 +210,47 @@ extension TextVW: StypleVWDelegate {
     
     func style(view: StypleVW, didSelected style: infoStyle) {
 
-        let style_Prev = (self.currentLayer.info as! infoLayer).style
-        let str_Main = (self.currentLayer.info as! infoLayer).text
-        let str_Text = str_Main == "" ? TEXT_Default : str_Main
+        let style_Current = self.currentLayer.info as! infoLayer
+        let style_Prev = style_Current.style
+        let str_Main = style_Current.text
+        var isLineM = style_Current.isLine
+        
+        var ary_LineText = str_Main.components(separatedBy: "\n").filter { (str) -> Bool in
+            return str != ""
+        }
+        let str_Text = str_Main == "" ? TEXT_Default : str_Main.condenseWhitespace()
         
         let style_Copy = infoStyle.copy(style: style)
-        style_Copy.effect.isBorder = Bool.random()
-        style_Copy.effect.isLine = Bool.random()
-        style_Copy.borderDiv = CGFloat(AppSingletonObj.randomNumber(min: 1, max: 4))
-        style_Copy.lineDiv = CGFloat(AppSingletonObj.randomNumber(min: 1, max: 5))
-        style_Copy.charcterSpacing = CGFloat(AppSingletonObj.randomDecimal(min: -1.0, max: 1.5))
-        style_Copy.lineSpacing = CGFloat(AppSingletonObj.randomNumber(min: -5, max: 1))
+        
+        style_Copy.preText = TextProperty.preText(style: style_Copy.style!)
+        style_Copy.postText = TextProperty.postText(style: style_Copy.style!)
+        
+        style_Copy.borderDiv = TextProperty.widthDiv(style: style_Copy.style!)
+        style_Copy.lineDiv = TextProperty.widthDiv(style: style_Copy.style!)
+        
+        let isJustified = TextProperty.isJustifiedText(style: style_Copy.style!)
+        style_Copy.isJustifiedText = isJustified
+        
+        if isJustified == true {
+            
+            style_Copy.textAlignment = .center
+        }
+        else {
+            
+            style_Copy.textAlignment = TextProperty.textAlignment(style: style_Copy.style!, align: style_Copy.textAlignment)
+        }
+        
+        style_Copy.effect.isBorder = TextProperty.isBorder(style: style_Copy.style!)
+        style_Copy.effect.isLine = TextProperty.isLine(style: style_Copy.style!)
+        
+        style_Copy.charcterSpacing = TextProperty.charcterSpacing(style: style_Copy.style!)
+        style_Copy.lineSpacing = TextProperty.lineSpacing(style: style_Copy.style!)
+        
+        if style_Copy.style == style_Current.style.style && style_Copy.listFontFamily.count > 1 {
+            
+            style_Copy.fontFamily = TextProperty.fontFamily(list: style_Copy.listFontFamily, font: style_Current.style.fontFamily)
+        }
+        
         
         if str_Text != "" {
             
@@ -239,6 +274,11 @@ extension TextVW: StypleVWDelegate {
                 int_Min =  1
             }
             
+//            if ary_LineText.count > int_Min {
+//
+//                int_Min = ary_LineText.count
+//            }
+            
             var divLine = 2.0
             if ary_Text.count < 12 {
                 
@@ -255,9 +295,21 @@ extension TextVW: StypleVWDelegate {
             
             
             var int_Max = Int(ceil(Double(ary_Text.count) / Double(divLine)))
-            if int_Max - 1 == int_Min {
+            if ary_Text.count == ary_LineText.count {
                 
-                int_Max = Int(ary_Text.count)
+                isLineM = true
+            }
+            else {
+                
+                if int_Max - 1 == int_Min {
+                    
+                    int_Max = Int(ary_Text.count)
+                }
+                else if int_Min > int_Max {
+                    
+                    divLine = divLine - 1
+                    int_Max = Int(ceil(Double(ary_Text.count) / Double(divLine)))
+                }
             }
             
             print("---------------->")
@@ -265,30 +317,41 @@ extension TextVW: StypleVWDelegate {
             print("int_Max-> \(int_Max)")
             print("arycunt-> \(ary_Text.count)")
             
-            if ary_Text.count > 3 {
+            if isLineM == true {
                 
-                int_Line = AppSingletonObj.randomNumber(min: int_Min, max: int_Max)
+                int_Line = ary_LineText.count
             }
-            
-            print("calllll--------->")
-            
-            if ary_Text.count <= 3 && int_Line == style_Prev.effect.line && style_Copy.effect.isBorder == style_Prev.effect.isBorder && style_Copy.effect.isLine == style_Prev.effect.isLine {
+            else {
                 
-                int_Line = style_Prev.effect.line == 1 ? 2 : 1
-            }
-            else if ary_Text.count > 3 && int_Line == style_Prev.effect.line && style_Copy.effect.isBorder == style_Prev.effect.isBorder && style_Copy.effect.isLine == style_Prev.effect.isLine {
+                if ary_Text.count > 3 && int_Max > int_Min {
+                    
+                    int_Line = AppSingletonObj.randomNumber(min: int_Min, max: int_Max)
+                }
+                else {
+                    
+                    int_Line = int_Min
+                }
                 
-                int_Line = AppSingletonObj.randomNumber(last: int_Line, min: int_Min, max: int_Max)
-            }
-            
-            if ary_Text.count > 5 && int_Line == 1 {
+                print("calllll--------->")
                 
-                int_Line = 2
-            }
-            
-            if int_Line > 15 {
+                if ary_Text.count <= 3 && int_Line == style_Prev.effect.line && style_Copy.effect.isBorder == style_Prev.effect.isBorder && style_Copy.effect.isLine == style_Prev.effect.isLine {
+                    
+                    int_Line = style_Prev.effect.line == 1 ? 2 : 1
+                }
+                else if ary_Text.count > 3 && int_Line == style_Prev.effect.line && style_Copy.effect.isBorder == style_Prev.effect.isBorder && style_Copy.effect.isLine == style_Prev.effect.isLine {
+                    
+                    int_Line = AppSingletonObj.randomNumber(last: int_Line, min: int_Min, max: int_Max, isCheck: true)
+                }
                 
-                int_Line = 15
+                if ary_Text.count > 5 && int_Line == 1 {
+                    
+                    int_Line = 2
+                }
+                
+                if int_Line > 15 {
+                    
+                    int_Line = 15
+                }
             }
             
             style_Copy.effect.line = int_Line
@@ -300,7 +363,7 @@ extension TextVW: StypleVWDelegate {
                 
                 if int_Line > 4 {
                     
-                    line_Solid = AppSingletonObj.randomNumber(min: 0, max: Int(Int(int_Line/2) > 5 ? 5 : Int(int_Line/2)))
+                    line_Solid = AppSingletonObj.randomNumber(min: 0, max: Int(int_Line - 2 > 8 ? 8 : int_Line - 2))
                 }
                 
                 while ary_Line.count != line_Solid {
@@ -324,7 +387,8 @@ extension TextVW: StypleVWDelegate {
             var ary_StyleSting : [infoText] = []
             
             var lstCount = 0
-            if int_Line > 1 {
+            
+            if int_Line > 1 && isLineM == false {
                 
                 while ary_Text.count > 0 {
                     
@@ -364,6 +428,12 @@ extension TextVW: StypleVWDelegate {
                         
                         count += 1
                         subArray = ary_Text[0...count - 1]
+                        
+                        if subArray.joined(separator: " ").count < 6 && ary_Text.count > 3 {
+                            
+                            count += 1
+                            subArray = ary_Text[0...count - 1]
+                        }
                     }
                     
                     
@@ -388,7 +458,7 @@ extension TextVW: StypleVWDelegate {
                     }
                     
                     
-                    if (ary_Text.count == 1 || ary_StyleSting.count == int_Line - 1) && ary_Text.count <= 5 && ary_Text.joined(separator: " ").count < 20 {
+                    if (ary_Text.count == 1 || ary_StyleSting.count == int_Line - 1) && ary_Text.count <= 5 && ary_Text.joined(separator: " ").count < 20 && ary_Text.joined(separator: " ").count != 0 {
                         
                         let info_Text = infoText(text: ary_Text.joined(separator: " "))
                         ary_StyleSting.append(info_Text)
@@ -407,17 +477,41 @@ extension TextVW: StypleVWDelegate {
                     }
                 }
             }
-            else {
+            else if isLineM == false {
                 
                 let info_Text = infoText(text: ary_Text.joined(separator: " "))
                 ary_StyleSting.append(info_Text)
+            }
+            else {
+                
+                while ary_LineText.count > 0 {
+                    
+                    let info_Text = infoText(text: ary_LineText[0])
+                    ary_StyleSting.append(info_Text)
+                    ary_LineText.remove(at: 0)
+                    
+                    if ary_Line.contains(ary_StyleSting.count) {
+                        
+                        let info_Text = infoText(text: "", line: true)
+                        ary_StyleSting.append(info_Text)
+                    }
+                }
             }
             
             style_Copy.effect.texts = ary_StyleSting
         }
 
         print("calllll---------> Finished")
-        self.vw_History.addToHistoty(style: style_Copy)
+        
+        if self.isFisrtLoaded == true {
+         
+            self.vw_History.addToHistoty(style: style_Copy)
+        }
+        else {
+            
+            self.isFisrtLoaded = true
+        }
+        
         self.delegate?.text?(view: self, changeStyle: style_Copy)
         
         if self.vw_History.muary_History.count == 1 {
@@ -448,5 +542,22 @@ extension TextVW: ShadowVWDelegate {
     func shadow(view: ShadowVW, Change value: Any, With type: ShadowValue) {
         
         self.delegate?.text?(view: self, ChangeShadow: value, With: type)
+    }
+}
+
+extension TextVW: GradientVWDelegate {
+    
+    func gradient(view: GradientVW, ShouldChange isEnable: Bool) {
+        
+        (self.currentLayer.info as! infoLayer).gradient.isGradient = isEnable
+//        self.delegate?.textDidChangeGradient?(view: self)
+    }
+    
+    func gradient(view: GradientVW, DidChange colors: [UIColor], ratio: Float, With direction: Float) {
+        
+        (self.currentLayer.info as! infoLayer).gradient.colors = colors
+        (self.currentLayer.info as! infoLayer).gradient.ratio = ratio
+        (self.currentLayer.info as! infoLayer).gradient.direction = direction
+        self.delegate?.textDidChangeGradient?(view: self)
     }
 }

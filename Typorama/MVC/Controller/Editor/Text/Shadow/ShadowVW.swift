@@ -14,6 +14,7 @@ enum ShadowValue : Int {
     case color
     case opacity
     case blur
+    case font
     case x
     case y
 }

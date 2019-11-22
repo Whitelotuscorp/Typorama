@@ -26,6 +26,16 @@ class infoImage: NSObject {
     
     var str_Size : String = ""
     
+    //Adjustment
+    var brightness : CGFloat = 0.0
+    var exposure : CGFloat = 0.0
+    var contrast : CGFloat = 1.0
+    var vibrancy : CGFloat = 0.0
+    var saturation : CGFloat = 1.0
+    var vignette : CGFloat = -1.0
+    var blur : CGFloat = 0.0
+    
+    
     init(size : String, color : UIColor, image : UIImage, type : ImageType) {
         
         self.str_Size = size

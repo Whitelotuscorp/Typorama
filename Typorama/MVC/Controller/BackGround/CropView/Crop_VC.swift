@@ -12,6 +12,7 @@ import UIKit
 
 class Crop_VC: IGRPhotoTweakViewController {
     
+    @IBOutlet weak var vw_Status: UIView!
     @IBOutlet weak var vw_Top: UIView!
     @IBOutlet weak var vw_Bottom: UIView!
     
@@ -31,6 +32,8 @@ class Crop_VC: IGRPhotoTweakViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.vw_Status.backgroundColor = COLOR_Cream
         
         let nib_CellCrop = UINib(nibName: "cell_c_Crop", bundle: nil)
         self.clc_Size.register(nib_CellCrop, forCellWithReuseIdentifier: "cell_c_Crop")
@@ -106,8 +109,7 @@ class Crop_VC: IGRPhotoTweakViewController {
         
         let dict : [String:String] = self.muary_Size.object(at: self.index_Selected.row) as! [String : String]
         self.sizeFrame = dict["size"]!
-        
-        self.cropAction()
+        cropAction()
     }
     
     override open func customHighlightMaskAlphaValue() -> CGFloat {
@@ -155,19 +157,21 @@ extension Crop_VC: UICollectionViewDelegate, UICollectionViewDataSource, UIColle
         
         self.photoView.cropView.isResizeDisable = true
         self.photoView.cropView.cornerView(isHide: true)
-        
-        self.resetView()
-        
+            
         if size_S == CUSTOME_Size {
             
+//            self.resetAspectRect()
             self.photoView.cropView.isResizeDisable = false
             self.photoView.cropView.cornerView(isHide: false)
-            self.resetView()
         }
         else if size_S != "" && ary_Size!.count > 1 {
             
             let str_Ratio = ary_Size?.joined(separator: ":")
             self.setCropAspectRect(aspect: str_Ratio!)
+        }
+        else {
+            
+            self.resetAspectRect()
         }
     }
 }

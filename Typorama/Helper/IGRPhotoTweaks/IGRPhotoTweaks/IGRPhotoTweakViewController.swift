@@ -8,34 +8,28 @@
 
 import UIKit
 
-
+@available(iOS 11.0, *)
 public protocol IGRPhotoTweakViewControllerDelegate : class {
     
-    /**
-     Called on image cropped.
-     */
+    /**Called on image cropped.*/
     func photoTweaksController(_ controller: IGRPhotoTweakViewController, didFinishWithCroppedImage croppedImage: UIImage)
-    /**
-     Called on cropping image canceled
-     */
     
+    /** Called on cropping image canceled */
     func photoTweaksControllerDidCancel(_ controller: IGRPhotoTweakViewController)
 }
 
+@available(iOS 11.0, *)
 open class IGRPhotoTweakViewController: UIViewController {
     
     //MARK: - Public VARs
     
-    /*
-     Image to process.
-     */
+    /*Image to process.*/
     public var image: UIImage!
     public var imageBG: UIImage!
     
     public var sizeFrame : String = ""
-    /*
-     The optional photo tweaks controller delegate.
-     */
+    /*The optional photo tweaks controller delegate.*/
+    
     public weak var delegate: IGRPhotoTweakViewControllerDelegate?
     
     //MARK: - Protected VARs
@@ -46,9 +40,6 @@ open class IGRPhotoTweakViewController: UIViewController {
     internal var isAutoSaveToLibray: Bool = false
     
     //MARK: - Extra VARs
-
-    
-    
     
     public lazy var photoView: IGRPhotoTweakView! = { [unowned self] by in
         
@@ -56,8 +47,10 @@ open class IGRPhotoTweakViewController: UIViewController {
         let left_Gap : CGFloat = 0
         
         let y = UIApplication.shared.statusBarFrame.height + 50
+        let bottom = UIApplication.shared.keyWindow!.safeAreaInsets.bottom
+        let size = UIScreen.main.bounds.size
         
-        let new_frame = CGRect(x: left_Gap, y: y, width: self.view.bounds.width - (left_Gap * 2), height: self.view.bounds.height - (y + 190))
+        let new_frame = CGRect(x: left_Gap, y: y, width: size.width - (left_Gap * 2), height: size.height - bottom - (y + 190))
         let photoView = IGRPhotoTweakView(frame: new_frame,
                                           image: self.image,
                                           customizationDelegate: self)
@@ -111,7 +104,7 @@ open class IGRPhotoTweakViewController: UIViewController {
         let imgvwBG = UIImageView(frame: rect)
         imgvwBG.image = self.imageBG
         imgvwBG.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        imgvwBG.backgroundColor = UIColor.red
+
         self.view.addSubview(imgvwBG)
         self.view.sendSubviewToBack(imgvwBG)
         
@@ -211,6 +204,7 @@ open class IGRPhotoTweakViewController: UIViewController {
     }
     
     open func customCanvasInsets() -> UIEdgeInsets {
+        
         return UIEdgeInsets(top: kCanvasHeaderHeigth, left: 0, bottom: 0, right: 0)
     }
 }

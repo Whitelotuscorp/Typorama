@@ -60,6 +60,50 @@ extension UIColor {
         }
         self.init(red: red, green: green, blue:  blue, alpha: alpha)
     }
+    
+    func hexString() -> String? {
+        
+        let components = self.cgColor.components
+
+        let r = components?[0] ?? 0.0
+        let g = components?[1] ?? 0.0
+        let b = components?[2] ?? 0.0
+
+        return String(format: "#%02lX%02lX%02lX", lroundf(Float(r * 255)), lroundf(Float(g * 255)), lroundf(Float(b * 255)))
+    }
+    
+    func inverseColor() -> UIColor {
+        
+        if self == UIColor.black {
+            
+            return .white
+        }
+        
+        var alpha: CGFloat = 1.0
+
+        var white: CGFloat = 0.0
+        if self.getWhite(&white, alpha: &alpha) {
+            return UIColor(white: 1.0 - white, alpha: alpha)
+        }
+
+        var hue: CGFloat = 0.0, saturation: CGFloat = 0.0, brightness: CGFloat = 0.0
+        if self.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
+            return UIColor(hue: 1.0 - hue, saturation: 1.0 - saturation, brightness: 1.0 - brightness, alpha: alpha)
+        }
+
+        var red: CGFloat = 0.0, green: CGFloat = 0.0, blue: CGFloat = 0.0
+        if self.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return UIColor(red: 1.0 - red, green: 1.0 - green, blue: 1.0 - blue, alpha: alpha)
+        }
+
+        return self
+    }
+    
+    func isLight() -> Bool {
+        guard let components = cgColor.components, components.count > 2 else {return false}
+        let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
+        return (brightness > 0.5)
+    }
 }
 
 extension UIImageView {
@@ -90,6 +134,12 @@ extension UIImageView {
 
 extension UILabel{
     
+    
+//    open override func draw(_ rect: CGRect) {
+//
+//        let insets = UIEdgeInsets.init(top: 0, left: 0, bottom: 0, right: 0)
+//        super.draw(rect.inset(by: insets))
+//    }
     func adjustFontSizeToFitRect(rect : CGRect){
         
         if text == nil{
@@ -125,5 +175,21 @@ extension UILabel{
                 p = currentSize + 1
             }
         }
+    }
+}
+
+extension UIImage {
+    
+    static func gradientImageWithBounds(bounds: CGRect, colors: [CGColor]) -> UIImage {
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.frame = bounds
+        gradientLayer.colors = colors
+        gradientLayer.locations = [0.25, 0.75]
+        
+        UIGraphicsBeginImageContext(gradientLayer.bounds.size)
+        gradientLayer.render(in: UIGraphicsGetCurrentContext()!)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return image!
     }
 }

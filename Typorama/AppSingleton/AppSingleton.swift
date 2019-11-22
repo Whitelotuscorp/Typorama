@@ -21,8 +21,8 @@ class AppSingleton: NSObject {
     //MARK: - Login Validation
     func isLoginCheck() -> Bool {
         
-        let str_UserId = AppDelegateGET.string(forKey: pref_LoginUserID)
-        let str_isLogin = AppDelegateGET.bool(forKey: pref_isLoginSuccessfully)
+        let str_UserId = AppDelegateGet.string(forKey: pref_LoginUserID)
+        let str_isLogin = AppDelegateGet.bool(forKey: pref_isLoginSuccessfully)
         
         if (str_UserId != nil && str_UserId != "" && str_isLogin == true) {
             
@@ -42,14 +42,39 @@ class AppSingleton: NSObject {
         let emailTest = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
         return emailTest.evaluate(with: testStr)
     }
-    
-    //MARK: - FilePath & Write    
-    func getFilePath(filename: String?) -> String{
+      
+    //MARK: - FilePath with Directory
+    func getPath(filename: String?, With folder: String = "") -> String{
         
-        let documentsPath: NSArray = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true) as NSArray;
-        let filePath = (documentsPath[0] as AnyObject).appendingPathComponent(filename!) as String
+        let documentsPath: NSArray = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as NSArray
         
-        return filePath
+        if folder != "" {
+            
+            let forderPath = (documentsPath[0] as AnyObject).appendingPathComponent(folder) as String
+            
+            do {
+                try FileManager.default.createDirectory(atPath: forderPath, withIntermediateDirectories: true, attributes: nil)
+            }
+            catch {
+                
+                NSLog("Unable to create directory")
+            }
+            
+            if filename != "" {
+             
+                let filePath = (forderPath as AnyObject).appendingPathComponent(filename!) as String
+                return filePath
+            }
+            else {
+             
+                return forderPath
+            }
+        }
+        else {
+            
+            let filePath = (documentsPath[0] as AnyObject).appendingPathComponent(filename!) as String
+            return filePath
+        }
     }
     
     func writeFile(filePath: String?, data:NSData?){
@@ -164,7 +189,8 @@ class AppSingleton: NSObject {
             let imag = UIImagePickerController()
             imag.delegate = (from as! UIImagePickerControllerDelegate & UINavigationControllerDelegate)
             imag.sourceType = type
-            imag.allowsEditing = true
+//            imag.allowsEditing = true
+            imag.modalPresentationStyle = .fullScreen
             from.present(imag, animated: true, completion: nil)
         }
     }
@@ -210,10 +236,53 @@ class AppSingleton: NSObject {
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
-        return image
+        let size = CGSize(width: (image?.size.width)! * 3, height: (image?.size.height)! * 3)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+        image!.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+        let img_Large = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
         
-//        let color = UIColor.init(patternImage: self.imageWithGradient(img: image))
-//        return self.setImageClipMask(image, color: color)
+        return img_Large
+    }
+    
+    func redrawImage(image: UIImage, With pading: CGFloat) -> UIImage? {
+   
+        let size = CGSize(width: (image.size.width) + (pading * 6), height: (image.size.height) + (pading * 6))
+        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+        image.draw(in: CGRect(x: pading * 3, y: pading * 3, width: image.size.width, height: image.size.height))
+        let img_Large = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return img_Large
+    }
+    
+    func transformImage(image: UIImage, scale: Float) -> UIImage {
+        
+        let blur = CIFilter(name: "CIGaussianBlur", parameters: ["inputRadius" : NSNumber(value: scale)])
+
+        let context = CIContext(options: nil)
+
+        let inputImage = CIImage(image: image)
+
+        let filter = CIFilter(name: "CIGaussianBlur")
+
+        filter?.setValue(inputImage, forKey: kCIInputImageKey)
+
+        filter?.setValue(NSNumber(value: scale), forKey: "inputRadius")
+
+        let result = filter?.value(forKey: kCIOutputImageKey) as? CIImage
+
+        var cgImage: CGImage? = nil
+        if let result = result {
+            cgImage = context.createCGImage(result, from: result.extent )
+        }
+        
+        var edited: UIImage? = nil
+        if let cgImage = cgImage {
+            edited = UIImage(cgImage: cgImage, scale: image.scale, orientation: .up)
+        }
+        
+        return edited!
     }
     
     func imageWithGradient(img:UIImage!) -> UIImage {
@@ -370,10 +439,10 @@ class AppSingleton: NSObject {
         UIRectFill(rect)
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
+        return image!
         
-        guard let cgImage = image?.cgImage else { return UIImage() }
-        
-        return UIImage.init(cgImage: cgImage)
+//        guard let cgImage = image?.cgImage else { return UIImage() }
+//        return UIImage.init(cgImage: cgImage)
     }
     
     func takeScreenShotMethod(view: UIView) -> UIImage {
@@ -384,5 +453,47 @@ class AppSingleton: NSObject {
         UIGraphicsEndImageContext()
     
         return image!
+    }
+    
+    func getCommonCanvasSize() -> CGSize {
+        
+        let w_Screen = UIScreen.main.bounds.width
+        let h_Screen = UIScreen.main.bounds.height
+        let h_Bottom : CGFloat = (AppDelegateObj.window?.safeAreaInsets.bottom)!
+        let h_StatusBar = UIApplication.shared.statusBarFrame.height + 35 + 162 + 40 + h_Bottom
+        
+        return CGSize(width: w_Screen, height: h_Screen - h_StatusBar)
+    }
+    
+    func getVisibleVC() -> UIViewController {
+        
+        let rootViewController = UIApplication.shared.keyWindow?.rootViewController
+        return self.visibleViewController(rootViewController: rootViewController!)
+    }
+    func visibleViewController(rootViewController : UIViewController) -> UIViewController {
+        
+        if rootViewController.presentedViewController == nil {
+            
+            return rootViewController
+        }
+        
+        if (rootViewController.presentedViewController?.isKind(of: UINavigationController.self))! {
+            
+            let navigationController = (rootViewController as! UINavigationController).presentedViewController as! UINavigationController
+            let lastViewController = navigationController.viewControllers.last
+            
+            return self.visibleViewController(rootViewController: lastViewController!)
+        }
+        
+        if (rootViewController.presentedViewController?.isKind(of: UITabBarController.self))! {
+            
+            let tabBarController = (rootViewController as! UITabBarController).presentedViewController as! UITabBarController
+            let selectedViewController = tabBarController.selectedViewController
+            
+            return self.visibleViewController(rootViewController: selectedViewController!)
+        }
+        
+        let presentedViewController = rootViewController.presentedViewController
+        return self.visibleViewController(rootViewController: presentedViewController!)
     }
 }

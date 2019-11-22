@@ -11,8 +11,10 @@ import UIKit
 
 let AppName = "Typorama"
 
+let AppFolder_Logo = "Logo"
+
 let AppDelegateObj  = AppDelegate.sharedinstance()
-let AppDelegateGET  = AppDelegate.getdefaultvalue()
+let AppDelegateGet  = AppDelegate.getdefaultvalue()
 let AppSingletonObj = AppSingleton.sharedInstance()
 
 let pref_LoginVia = "pref_LoginVia"
