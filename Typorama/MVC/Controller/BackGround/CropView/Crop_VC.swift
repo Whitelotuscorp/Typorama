@@ -30,6 +30,8 @@ class Crop_VC: IGRPhotoTweakViewController {
     
     var muary_Size = NSMutableArray()
     
+    var str_CustomSize : String = ""
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -122,6 +124,12 @@ class Crop_VC: IGRPhotoTweakViewController {
                             bottom: 0,
                             right: 0.0)
     }
+
+    override open func customCropTweakViewDidMove(_ cropView: IGRCropView) {
+        
+        self.str_CustomSize = String(format: "%d\nx\n%d", Int(cropView.frame.width), Int(cropView.frame.height))
+        self.clc_Size.reloadData()
+    }
 }
 
 extension Crop_VC: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -136,8 +144,18 @@ extension Crop_VC: UICollectionViewDelegate, UICollectionViewDataSource, UIColle
         let cell : cell_c_Crop = collectionView.dequeueReusableCell(withReuseIdentifier: "cell_c_Crop", for: indexPath) as! cell_c_Crop
         
         let dict : [String:String] = self.muary_Size.object(at: indexPath.row) as! [String : String]
+        let size_S = dict["size"]
+        
         cell.lbl_Name.text = dict["name"]
-        cell.lbl_Size.text = dict["scale"]
+        
+        if size_S == CUSTOME_Size && self.sizeFrame == CUSTOME_Size {
+            
+            cell.lbl_Size.text = self.str_CustomSize
+        }
+        else {
+            
+            cell.lbl_Size.text = dict["scale"]
+        }
         
         return cell
     }
@@ -154,23 +172,26 @@ extension Crop_VC: UICollectionViewDelegate, UICollectionViewDataSource, UIColle
         let dict : [String:String] = self.muary_Size.object(at: indexPath.row) as! [String : String]
         let size_S = dict["size"]
         let ary_Size = dict["size"]?.components(separatedBy: "x")
+        self.sizeFrame = dict["size"]!
         
         self.photoView.cropView.isResizeDisable = true
         self.photoView.cropView.cornerView(isHide: true)
-            
+    
         if size_S == CUSTOME_Size {
             
-//            self.resetAspectRect()
+            self.customCropTweakViewDidMove(self.photoView.cropView)
             self.photoView.cropView.isResizeDisable = false
             self.photoView.cropView.cornerView(isHide: false)
         }
         else if size_S != "" && ary_Size!.count > 1 {
             
+            self.str_CustomSize = ""
             let str_Ratio = ary_Size?.joined(separator: ":")
             self.setCropAspectRect(aspect: str_Ratio!)
         }
         else {
             
+            self.str_CustomSize = ""
             self.resetAspectRect()
         }
     }

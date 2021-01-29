@@ -108,6 +108,16 @@ class GradientVW: UIView {
     }
     
     @IBAction func action_ChangeColorRatio(_ slider: TactileSlider) {
+        print(slider.value)
+        
+        if slider.value < 0.10 {
+         
+            slider.setValue(0.10, animated: false)
+        }
+        else if slider.value > 0.90 {
+         
+            slider.setValue(0.90, animated: false)
+        }
         
         self.action_CallDelegate()
     }

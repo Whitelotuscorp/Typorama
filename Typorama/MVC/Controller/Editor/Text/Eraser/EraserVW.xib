@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina6_1" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="EraserVW" customModule="Typorama" customModuleProvider="target">
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="EraserVW" customModule="Posterooh" customModuleProvider="target">
             <connections>
+                <outlet property="btn_Undo" destination="UbY-BR-ekv" id="1tu-U4-hMA"/>
                 <outlet property="contentView" destination="iN0-l3-epB" id="6fQ-fQ-3uX"/>
                 <outlet property="lbl_Intensity" destination="6b8-CJ-hhW" id="uiI-Db-U8E"/>
                 <outlet property="lbl_Size" destination="pCT-lS-ofw" id="Ata-Qs-CEW"/>
-                <outlet property="lbl_Undo" destination="uu4-Xa-OmN" id="LRj-b6-GD8"/>
                 <outlet property="sld_Intensity" destination="kg8-UY-oXV" id="yIe-gK-qWh"/>
                 <outlet property="sld_Size" destination="0o9-o1-wlE" id="H9c-xC-oQV"/>
             </connections>
@@ -37,39 +35,47 @@
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="0o9-o1-wlE">
-                    <rect key="frame" x="120.5" y="12.5" width="195.5" height="31"/>
+                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="25" minValue="1" maxValue="50" translatesAutoresizingMaskIntoConstraints="NO" id="0o9-o1-wlE">
+                    <rect key="frame" x="120.5" y="12.5" width="201.5" height="31"/>
                     <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <connections>
+                        <action selector="action_ChangeSlider:" destination="-1" eventType="valueChanged" id="x2H-bS-XMb"/>
+                    </connections>
                 </slider>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="UNDO LAST ERASER" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uu4-Xa-OmN">
-                    <rect key="frame" x="324" y="10" width="80" height="80"/>
+                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" minValue="-1" maxValue="0.0" translatesAutoresizingMaskIntoConstraints="NO" id="kg8-UY-oXV">
+                    <rect key="frame" x="120.5" y="57.5" width="201.5" height="31"/>
+                    <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <connections>
+                        <action selector="action_ChangeSlider:" destination="-1" eventType="valueChanged" id="E2D-Uf-dnQ"/>
+                    </connections>
+                </slider>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UbY-BR-ekv">
+                    <rect key="frame" x="330" y="13" width="74" height="74"/>
+                    <color key="backgroundColor" cocoaTouchSystemColor="scrollViewTexturedBackgroundColor"/>
                     <constraints>
-                        <constraint firstAttribute="width" secondItem="uu4-Xa-OmN" secondAttribute="height" multiplier="1:1" id="3Mv-Pw-Uh5"/>
+                        <constraint firstAttribute="width" secondItem="UbY-BR-ekv" secondAttribute="height" multiplier="1:1" id="HfL-Ld-RKh"/>
                     </constraints>
-                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                    <nil key="textColor"/>
-                    <nil key="highlightedColor"/>
-                </label>
-                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="kg8-UY-oXV">
-                    <rect key="frame" x="120.5" y="57.5" width="195.5" height="31"/>
-                    <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                </slider>
+                    <state key="normal" title="UNDO LAST ERASER"/>
+                    <connections>
+                        <action selector="action_Undo:" destination="-1" eventType="touchUpInside" id="Sut-ow-ue4"/>
+                    </connections>
+                </button>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
                 <constraint firstItem="0o9-o1-wlE" firstAttribute="leading" secondItem="pCT-lS-ofw" secondAttribute="trailing" constant="10" id="4Dt-DA-QfX"/>
                 <constraint firstItem="6b8-CJ-hhW" firstAttribute="top" secondItem="pCT-lS-ofw" secondAttribute="bottom" constant="10" id="5k6-b3-guG"/>
-                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="uu4-Xa-OmN" secondAttribute="trailing" constant="10" id="9IS-gV-ZF4"/>
+                <constraint firstItem="UbY-BR-ekv" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="13" id="Dze-1Q-mYK"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="UbY-BR-ekv" secondAttribute="bottom" constant="13" id="GFh-zZ-W0h"/>
                 <constraint firstItem="0o9-o1-wlE" firstAttribute="centerY" secondItem="pCT-lS-ofw" secondAttribute="centerY" id="MAM-zb-TXb"/>
                 <constraint firstAttribute="bottom" secondItem="6b8-CJ-hhW" secondAttribute="bottom" constant="10" id="MPC-nq-abB"/>
-                <constraint firstItem="uu4-Xa-OmN" firstAttribute="leading" secondItem="0o9-o1-wlE" secondAttribute="trailing" constant="10" id="PJX-Uo-3X7"/>
-                <constraint firstItem="uu4-Xa-OmN" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="10" id="Pyx-sW-wdo"/>
                 <constraint firstItem="6b8-CJ-hhW" firstAttribute="height" secondItem="pCT-lS-ofw" secondAttribute="height" id="c0E-zX-ikT"/>
-                <constraint firstAttribute="bottom" secondItem="uu4-Xa-OmN" secondAttribute="bottom" constant="10" id="cWt-Ix-AQI"/>
                 <constraint firstItem="kg8-UY-oXV" firstAttribute="centerY" secondItem="6b8-CJ-hhW" secondAttribute="centerY" id="iHa-de-bfe"/>
                 <constraint firstItem="kg8-UY-oXV" firstAttribute="leading" secondItem="6b8-CJ-hhW" secondAttribute="trailing" constant="10" id="iO6-sr-fJJ"/>
                 <constraint firstItem="pCT-lS-ofw" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="10" id="kXp-SF-Ua1"/>
-                <constraint firstItem="uu4-Xa-OmN" firstAttribute="leading" secondItem="kg8-UY-oXV" secondAttribute="trailing" constant="10" id="rcv-ei-SsV"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="UbY-BR-ekv" secondAttribute="trailing" constant="10" id="odT-Q2-E1L"/>
+                <constraint firstItem="UbY-BR-ekv" firstAttribute="leading" secondItem="kg8-UY-oXV" secondAttribute="trailing" constant="10" id="pdf-bX-AOz"/>
+                <constraint firstItem="UbY-BR-ekv" firstAttribute="leading" secondItem="0o9-o1-wlE" secondAttribute="trailing" constant="10" id="q6J-vt-IdT"/>
                 <constraint firstItem="pCT-lS-ofw" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="10" id="vBT-fd-AVo"/>
                 <constraint firstItem="6b8-CJ-hhW" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="10" id="zTw-4A-LMK"/>
                 <constraint firstItem="6b8-CJ-hhW" firstAttribute="width" secondItem="pCT-lS-ofw" secondAttribute="width" id="zhm-0L-SVB"/>

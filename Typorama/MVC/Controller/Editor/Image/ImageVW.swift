@@ -36,6 +36,8 @@ class ImageVW: UIView {
     
     @IBOutlet var contentView: UIView!
     @IBOutlet var vw_Menu: UIView!
+    @IBOutlet var vw_Content: UIView!
+    @IBOutlet var vw_Slider: UIView!
     
     @IBOutlet weak var clc_Menu: UICollectionView!
     @IBOutlet weak var clc_Content: UICollectionView!
@@ -162,6 +164,9 @@ class ImageVW: UIView {
         self.clc_Content.reloadData()
         
         self.updateConstraintsIfNeeded()
+        
+        AppSingletonObj.setViewAnimation(view: self.vw_Slider, hidden: false)
+        AppSingletonObj.setViewAnimation(view: self.vw_Content, hidden: false)
     }
     
     @objc func action_SelectAdjustmentOption() {

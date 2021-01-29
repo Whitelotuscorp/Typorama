@@ -147,10 +147,11 @@ class PhotosAlbum: NSObject {
                         
                         Handler(img)
                     })
-                }else{
+                }
+                else{
                     DispatchQueue.main.async(execute: {
                         
-                        Handler(nil!)
+                        Handler(nil )
                     })
                 }
             })

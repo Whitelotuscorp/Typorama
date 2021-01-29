@@ -19,7 +19,11 @@ class cell_c_Share: UICollectionViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        self.lbl_Name.font = UIFont(name: APPFONT_Bold, size: APPFONT_Size13)
+        self.lbl_Name.font = UIFont(name: APPFONT_Bold, size: APPFONT_Size10)
         self.lbl_Name.textColor = COLOR_Black
+        
+        self.vw_BG.clipsToBounds = true
+        self.vw_BG.layer.cornerRadius = 5
+        self.vw_BG.backgroundColor = COLOR_GrayL240
     }
 }

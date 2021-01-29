@@ -77,7 +77,7 @@ class AddLogo: UIView {
             btn!.titleLabel!.numberOfLines = 0
         }
         
-        self.vw_Alert.backgroundColor = COLOR_GrayL210
+        self.vw_Alert.backgroundColor = COLOR_GrayL200
         self.vw_Alert.transform = CGAffineTransform(scaleX: 0.01, y: 0.01)
         self.vw_Alert.clipsToBounds = true
         self.vw_Alert.layer.cornerRadius = 8

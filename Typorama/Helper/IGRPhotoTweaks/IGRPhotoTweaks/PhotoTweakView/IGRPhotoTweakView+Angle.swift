@@ -9,6 +9,7 @@
 import Foundation
 
 extension IGRPhotoTweakView {
+    
     public func changeAngle(radians: CGFloat) {
         // update masks
         self.highlightMask(true, animate: false)

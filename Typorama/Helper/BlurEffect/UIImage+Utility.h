@@ -29,6 +29,10 @@
 
 - (UIImage*)blurryImage:(CGFloat)blur;
 
+- (UIImage *)fixOrientation:(UIImageOrientation)orientation;
+
+- (UIImage *)imageByApplyingAlpha:(CGFloat) alpha;
+
 @end
 
 

@@ -41,6 +41,8 @@ public protocol IGRPhotoTweakViewCustomizationDelegate : class {
      Insets for crop view
      */
     func canvasInsets() -> UIEdgeInsets
+    
+    func cropTweakViewDidMove(_ cropView: IGRCropView)
 }
 
 extension IGRPhotoTweakView {
@@ -79,5 +81,10 @@ extension IGRPhotoTweakView {
     
     func canvasInsets() -> UIEdgeInsets {
         return (self.customizationDelegate?.canvasInsets())!
+    }
+    
+    func cropTweakViewDidMove(_ cropView: IGRCropView) {
+        
+        self.customizationDelegate?.cropTweakViewDidMove(cropView)
     }
 }

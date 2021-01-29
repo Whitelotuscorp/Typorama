@@ -180,38 +180,71 @@ class SavePhoto: NSObject {
                 let infoL = layer.info as! infoLayer
                 
                 let transform : CGAffineTransform = layer.transform
-
-                let x_LY: CGFloat = (layer.frame.origin.x * size!.width) / imageview!.frame.size.width
-                let y_LY: CGFloat = (layer.frame.origin.y * size!.height) / imageview!.frame.size.height
-                let w_LY: CGFloat = (layer.frame.size.width * size!.width) / imageview!.frame.size.width
-                let h_LY: CGFloat = (layer.frame.size.height * size!.height) / imageview!.frame.size.height
+//                layer.transform = .identity
                 
-                let area_LY = CGRect(x: x_LY, y: y_LY, width: w_LY, height: h_LY)
-                
-                let img_LyMain = infoL.image //self.getNewLayer(layer: infoL, info: infoL.style, size: CGSize(width: w_LY, height: h_LY))
-                
-                if infoL.shadow.isShadow == true {
-
-                    let x_SD: CGFloat = ((layer.frame.origin.x + infoL.shadow.x) * size!.width) / imageview!.frame.size.width
-                    let y_SD: CGFloat = ((layer.frame.origin.y + infoL.shadow.y) * size!.height) / imageview!.frame.size.height
-
-                    let area_SD = CGRect(x: x_SD, y: y_SD, width: w_LY, height: h_LY)
-                    let img_SDMain = (layer.shadowView as! UIImageView).image //self.getNewShadowLayer(layer: infoL, image: img_LyMain)
+                if let img_LyMain = infoL.image, img_LyMain.size.width > 0 && img_LyMain.size.height > 0 {
                     
-                    let img_SD = self.rotateImage(img_SDMain, withTransform: transform)!
-                    img_SD.draw(in: area_SD, blendMode: .normal, alpha: infoL.shadow.opacity)
+                    let x_LY: CGFloat = (layer.frame.origin.x * size!.width) / imageview!.frame.size.width
+                    let y_LY: CGFloat = (layer.frame.origin.y * size!.height) / imageview!.frame.size.height
+                    let w_LY: CGFloat = (layer.frame.size.width * size!.width) / imageview!.frame.size.width
+                    let h_LY: CGFloat = (layer.frame.size.height * size!.height) / imageview!.frame.size.height
+                    
+                    let area_LY = CGRect(x: x_LY, y: y_LY, width: w_LY, height: h_LY)
+                    
+                     //self.getNewLayer(layer: infoL, info: infoL.style, size: CGSize(width: w_LY, height: h_LY))
+                    
+                    if infoL.shadow.isShadow == true {
+
+                        let x_SD: CGFloat = ((layer.frame.origin.x + infoL.shadow.x) * size!.width) / imageview!.frame.size.width
+                        let y_SD: CGFloat = ((layer.frame.origin.y + infoL.shadow.y) * size!.height) / imageview!.frame.size.height
+
+                        let area_SD = CGRect(x: x_SD, y: y_SD, width: w_LY, height: h_LY)
+                        let img_SDMain = (layer.shadowView as! UIImageView).image //self.getNewShadowLayer(layer: infoL, image: img_LyMain)
+                        
+                        let img_SD = self.rotateImage(img_SDMain, withTransform: transform)!
+                        img_SD.draw(in: area_SD, blendMode: .normal, alpha: infoL.shadow.opacity)
+                    }                    
+                    
+                    let img_LY = self.rotateImage(img_LyMain, withTransform: transform)!
+                    img_LY.draw(in: area_LY, blendMode: .normal, alpha: 1.0)
+                    
+                    img_Main = UIGraphicsGetImageFromCurrentImageContext()
                 }
-                
-                
-                let img_LY = self.rotateImage(img_LyMain, withTransform: transform)!
-                img_LY.draw(in: area_LY, blendMode: .normal, alpha: 1.0)
-                
-                img_Main = UIGraphicsGetImageFromCurrentImageContext()
             }
             
             UIGraphicsEndImageContext()
             completionBlock(img_Main)
         }
+    }
+    
+    func mergeViewLayer(view: UIView?, With resoluation: CGFloat, completionBlock: @escaping (_ image: UIImage?) -> Void) {
+        
+        let img_BG = UIImage()
+        let size = CGSize(width: (view?.frame.width)! * resoluation, height: (view?.frame.height)! * resoluation)
+        
+        UIGraphicsBeginImageContext(size)
+        img_BG.draw(in: CGRect(origin: CGPoint(x: 0, y: 0), size: size), blendMode: .normal, alpha: 1.0)
+        
+        for vw in view!.subviews  {
+            
+            let imgvw = vw as! UIImageView
+
+            let x_LY: CGFloat = (imgvw.frame.origin.x * size.width) / view!.frame.size.width
+            let y_LY: CGFloat = (imgvw.frame.origin.y * size.height) / view!.frame.size.height
+            let w_LY: CGFloat = (imgvw.frame.size.width * size.width) / view!.frame.size.width
+            let h_LY: CGFloat = (imgvw.frame.size.height * size.height) / view!.frame.size.height
+             
+            let area_LY = CGRect(x: x_LY, y: y_LY, width: w_LY, height: h_LY)
+            
+            if let img_LY = imgvw.image {
+             
+                img_LY.draw(in: area_LY, blendMode: .normal, alpha: 1.0)
+            }
+        }
+        
+        let img_Main = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        completionBlock(img_Main)
     }
     
     func radians(_ degrees: Double) -> Double {
@@ -227,8 +260,8 @@ class SavePhoto: NSObject {
         let destinationSize = destRect.size
         
         let radians = atan2f(Float(transform.b), Float(transform.a))
-//        CGFloat degrees = radians * (180 / M_PI);
-        
+//        let radians = Double(degrees) * (180.0 / .pi);
+                
         // Draw image
         UIGraphicsBeginImageContext(destinationSize)
         let context = UIGraphicsGetCurrentContext()
@@ -269,3 +302,4 @@ class SavePhoto: NSObject {
     }
 
 }
+

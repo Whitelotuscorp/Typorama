@@ -25,6 +25,7 @@ extension IGRPhotoTweakView : IGRCropViewDelegate {
     
     public func cropViewDidMove(_ cropView: IGRCropView) {
         self.updateMasks()
+        self.customizationDelegate?.cropTweakViewDidMove(cropView)
     }
     
     public func cropViewDidStopCrop(_ cropView: IGRCropView) {
@@ -95,6 +96,7 @@ extension IGRPhotoTweakView : IGRCropViewDelegate {
         
         self.highlightMask(false, animate: true)
         self.manualMove = false
+        self.customizationDelegate?.cropTweakViewDidMove(cropView)
     }
     
     public func cropViewInsideValidFrame(for point: CGPoint, from cropView: IGRCropView) -> Bool {

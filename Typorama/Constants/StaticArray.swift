@@ -36,14 +36,15 @@ let ARRAY_CanvasSize  = [["name":"Original Size", "scale":"", "size":ORIGINAL_Si
                          ["name":"UK Poster Sizes", "scale":"Coming Soon", "size":""],
                          ["name":"USA Poster Sizes", "scale":"Coming Soon", "size":""]]
 
-let ARRAY_Share        = [["name":"Save", "icon":"icon_image"],
-                          ["name":"Instagram", "icon":"icon_overlap"],
-                          ["name":"Facebook", "icon":"icon_filter"],
-                          ["name":"WhatsApp", "icon":"icon_adjustment"],
-                          ["name":"Mail", "icon":"icon_image"],
-                          ["name":"Message", "icon":"icon_overlap"],
-                          ["name":"Twitter", "icon":"icon_filter"],
-                          ["name":"Other", "icon":"icon_adjustment"]]
+let ARRAY_Share        = [["name":"Save", "icon":"share-save"],
+                          ["name":"Instagram", "icon":"share-instagram"],
+                          ["name":"Facebook", "icon":"share-facebook"],
+                          ["name":"WhatsApp", "icon":"share-whatsapp"],
+                          ["name":"Mail", "icon":"share-mail"],
+                          ["name":"Message", "icon":"share-message"],
+                          ["name":"Messenger", "icon":"share-fb-messanger"],
+                          ["name":"Twitter", "icon":"share-twitter"],
+                          ["name":"Other", "icon":"share-more"]]
 
 
 let kMENUIMAGE_Image = "Image"

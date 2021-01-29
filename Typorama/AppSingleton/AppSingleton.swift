@@ -112,13 +112,18 @@ class AppSingleton: NSObject {
         alert.addAction(UIAlertAction(title: btnTitle, style: UIAlertAction.Style.default, handler: nil))
         controller?.present(alert, animated: true, completion: nil)
     }
-    func alertShow(title: String?, message: String?, From controller: UIViewController? ,btnTitle: String?, CompletionHandler:@escaping (_ code: Bool) -> Void) {
+    func alertShow(title: String?, message: String?, From controller: UIViewController? ,btnTitles: [String], CompletionHandler:@escaping (_ code: Bool, _ action: String) -> Void) {
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
-        alert.addAction(UIAlertAction(title: btnTitle, style: .default, handler: { (alert: UIAlertAction!) in
-            
-             CompletionHandler(true)
-        }))
+        
+        for btnTitle in btnTitles {
+           
+            alert.addAction(UIAlertAction(title: btnTitle, style: .default, handler: { (alert: UIAlertAction!) in
+                
+                CompletionHandler(true, alert.title!)
+            }))
+        }
+        
         controller?.present(alert, animated: true, completion: nil)
     }
     
@@ -255,6 +260,22 @@ class AppSingleton: NSObject {
         
         return img_Large
     }
+
+    func drawRectangle(size: CGSize, WithLine width: CGFloat, color: UIColor) -> UIImage {
+        
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let img = renderer.image { ctx in
+            ctx.cgContext.setFillColor(UIColor.clear.cgColor)
+            ctx.cgContext.setStrokeColor(color.cgColor)
+            ctx.cgContext.setLineWidth(width)
+
+            let rectangle = CGRect(origin: CGPoint(x: 0, y: 0), size: size)
+            ctx.cgContext.addRect(rectangle)
+            ctx.cgContext.drawPath(using: .fillStroke)
+        }
+        
+        return img
+    }
     
     func transformImage(image: UIImage, scale: Float) -> UIImage {
         
@@ -370,7 +391,7 @@ class AppSingleton: NSObject {
         return [startPoint, endPoint]
     }
     
-    func setImageClipMask(_ image: UIImage?, color: UIColor?) -> UIImage? {
+    @objc func setImageClipMask(_ image: UIImage?, color: UIColor?) -> UIImage? {
         
         let rect = CGRect(x: 0, y: 0, width: image?.size.width ?? 0.0, height: image?.size.height ?? 0.0)
         UIGraphicsBeginImageContext(rect.size)
@@ -385,7 +406,96 @@ class AppSingleton: NSObject {
         
         return img_clip
     }
+    
+    @objc func setBackGroundColor(_ image: UIImage?, color: UIColor?) -> UIImage? {
+        
+        let area_BG = CGRect(x: 0, y: 0, width: image!.size.width, height: image!.size.height)
+        UIGraphicsBeginImageContext(image!.size)
+        self.createImage(color: color!, size: image!.size).draw(in: area_BG, blendMode: CGBlendMode.normal, alpha: 1.0)
+        image?.draw(in: area_BG, blendMode: CGBlendMode.normal, alpha: 1.0)
+        let newImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        
+        return newImage
+    }
 
+    @objc func setPaddingImage(_ image: UIImage?, padding: CGFloat) -> UIImage? {
+        
+        let w_Screen = UIScreen.main.bounds.width / 2
+        
+        let pedding = (image?.size.width)! * 15 / w_Screen
+        
+        let area_BG = CGRect(x: 0, y: 0, width: image!.size.width + (pedding * 2), height: image!.size.height + (pedding * 2))
+        let area_LY = CGRect(x: pedding, y: pedding, width: image!.size.width, height: image!.size.height)
+        UIGraphicsBeginImageContext(area_BG.size)
+        self.createImage(color: UIColor.clear, size: area_BG.size).draw(in: area_BG, blendMode: CGBlendMode.normal, alpha: 1.0)
+        image?.draw(in: area_LY, blendMode: CGBlendMode.normal, alpha: 1.0)
+        let newImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        
+        return newImage
+    }
+    
+    func textMaskedImage(size: CGSize, text: String, attributes: [NSAttributedString.Key: Any]) -> UIImage? {
+        
+        
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .center
+        
+        var attributes1 = attributes
+        attributes1[NSAttributedString.Key.paragraphStyle] = paragraphStyle
+        attributes1[NSAttributedString.Key.foregroundColor] = UIColor.white
+        
+        let textSize = text.size(withAttributes: attributes1)
+        let top : CGFloat = 10
+        UIGraphicsBeginImageContextWithOptions(CGSize(width: size.width, height: textSize.height + top), true, 0)
+        let context = UIGraphicsGetCurrentContext()
+        context?.scaleBy(x: 1, y: -1)
+        context?.translateBy(x: 0, y: -size.height)
+
+        // draw rounded rectange inset of the button's entire dimensions
+
+        UIColor.white.setStroke()
+        let pathRect = CGRect(origin: .zero, size: size).insetBy(dx: 10, dy: 10)
+        let path = UIBezierPath(roundedRect: pathRect, cornerRadius: 0)
+        path.lineWidth = 0
+        path.stroke()
+                       
+        // draw the text
+        let point = CGPoint(x: (size.width - textSize.width) / 2, y: (textSize.height - top + 4) / 2)
+        text.draw(at: point, withAttributes: attributes1)
+
+        // capture the image and end context
+
+        let maskImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        // create image mask
+
+        guard let cgimage = maskImage?.cgImage, let dataProvider = cgimage.dataProvider else { return nil }
+
+        let bytesPerRow = cgimage.bytesPerRow
+        let bitsPerPixel = cgimage.bitsPerPixel
+        let width = cgimage.width
+        let height = cgimage.height
+        let bitsPerComponent = cgimage.bitsPerComponent
+
+        guard let mask = CGImage(maskWidth: width, height: height, bitsPerComponent: bitsPerComponent, bitsPerPixel: bitsPerPixel, bytesPerRow: bytesPerRow, provider: dataProvider, decode: nil, shouldInterpolate: false) else { return nil }
+
+        // create the actual image
+
+        let rect = CGRect(origin: .zero, size: size)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0)
+        UIGraphicsGetCurrentContext()?.clip(to: rect, mask: mask)
+        UIColor.white.withAlphaComponent(1.0).setFill()
+        UIBezierPath(rect: rect).fill()
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        let color = attributes[NSAttributedString.Key.foregroundColor] as! UIColor
+        return self.setImageClipMask(image, color: color)
+    }
+    
     func manageMBProgress(isShow: Bool) {
         
         DispatchQueue.main.async(execute: { () -> Void in
@@ -463,6 +573,13 @@ class AppSingleton: NSObject {
         let h_StatusBar = UIApplication.shared.statusBarFrame.height + 35 + 162 + 40 + h_Bottom
         
         return CGSize(width: w_Screen, height: h_Screen - h_StatusBar)
+    }
+    
+    func setViewAnimation(view: UIView, hidden: Bool) {
+        
+        UIView.transition(with: view, duration: 0.5, options: .transitionCrossDissolve, animations: {
+            view.isHidden = hidden
+        })
     }
     
     func getVisibleVC() -> UIViewController {

@@ -116,6 +116,7 @@ class StyleList: NSObject {
         info.listFontFamily = ["SteelfishRg-Italic", "SteelfishRg-BoldItalic"]
         info.style = LayerStyle.FASTRUNNER
         info.textAlignment = .left
+        info.rightInset = 5.0
         
         let effectB = infoEffect()
         effectB.isBorder = false
@@ -230,6 +231,9 @@ class infoStyle: NSObject {
     var charcterSpacing : CGFloat = 0.0
     var lineSpacing : CGFloat = 0.0
     
+    var leftInset : CGFloat = 0.0
+    var rightInset : CGFloat = 0.0
+    
 //    var ary_String : [String] = ["White Lotus Pvt", "Lotus Corporation", "Corporation Company", "Company White"]
     
     class func copy(style: infoStyle) -> infoStyle {
@@ -248,6 +252,8 @@ class infoStyle: NSObject {
         info.borderDiv = style.borderDiv
         info.charcterSpacing = style.charcterSpacing
         info.lineSpacing = style.lineSpacing
+        info.leftInset = style.leftInset
+        info.rightInset = style.rightInset
         
         return info
     }

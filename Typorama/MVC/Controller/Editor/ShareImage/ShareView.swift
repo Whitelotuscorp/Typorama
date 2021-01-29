@@ -9,16 +9,28 @@
 
 import UIKit
 
+protocol ShareViewDelegate: class {
+    
+    func shareView(view: ShareView, DidSelectAt type: ShareType)
+}
+
 class ShareView: UIView {
+    
+    weak var delegate : ShareViewDelegate?
     
     @IBOutlet var contentView: UIView!
     @IBOutlet var vw_Social: UIView!
     
     @IBOutlet weak var clc_Social: UICollectionView!
     
-    @IBOutlet weak var btn_Close: UIButton!
+    @IBOutlet weak var btn_Done: UIButton!
+    
+    @IBOutlet weak var lyl_t_Main: NSLayoutConstraint!
+    @IBOutlet weak var lyl_h_Social: NSLayoutConstraint!
     
     var muary_Social = NSMutableArray()
+    
+    var cell_Size : CGFloat = 80
     
     override func draw(_ rect: CGRect) {
         // Drawing code
@@ -26,7 +38,8 @@ class ShareView: UIView {
     
     override init(frame: CGRect) {
         
-        super.init(frame: frame)
+        super.init(frame: AppDelegateObj.window!.frame)
+        AppDelegateObj.window?.addSubview(self)
         
         // 3. Setup view from .xib file
         configureXIB()
@@ -53,24 +66,51 @@ class ShareView: UIView {
         self.contentView.autoresizingMask = [UIView.AutoresizingMask.flexibleWidth, UIView.AutoresizingMask.flexibleHeight]
         self.addSubview(self.contentView)
         
-        self.contentView.backgroundColor = COLOR_GrayL210
+        self.vw_Social.backgroundColor = COLOR_Cream
         
         let nib_CellCrop = UINib(nibName: "cell_c_Share", bundle: nil)
         self.clc_Social.register(nib_CellCrop, forCellWithReuseIdentifier: "cell_c_Share")
         
+//        self.cell_Size = (self.frame.width - 10) / 5.0
+        
         let layout_Cat = self.clc_Social.collectionViewLayout as! UICollectionViewFlowLayout
-        layout_Cat.itemSize = CGSize(width: 70, height: 70)
+        layout_Cat.itemSize = CGSize(width: self.cell_Size, height: self.cell_Size)
         self.clc_Social.collectionViewLayout = layout_Cat
+        
+        self.btn_Done.titleLabel?.font = UIFont(name: APPFONT_Bold, size: APPFONT_Size12)
         
         self.muary_Social = NSMutableArray(array: ARRAY_Share)
         self.clc_Social.reloadData()
+        
+        let h_Top : CGFloat = (AppDelegateObj.window?.safeAreaInsets.top)!
+        self.lyl_t_Main.constant = h_Top
+        self.updateConstraintsIfNeeded()
+        self.layoutIfNeeded()
+    }
+    
+    @IBAction func action_Done(_ sender: UIButton) {
+    
+        self.hide()
     }
     
     func show() {
         
+        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut, animations: {() -> Void in
+            self.lyl_h_Social.constant = self.cell_Size
+            self.layoutIfNeeded()
+        }, completion: {(finished: Bool) -> Void in
+          
+        })
     }
     func hide() {
         
+        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut, animations: {() -> Void in
+            self.lyl_h_Social.constant = 0
+            self.layoutIfNeeded()
+        }, completion: {(finished: Bool) -> Void in
+            
+            self.removeFromSuperview()
+        })
     }
 }
 
@@ -94,5 +134,8 @@ extension ShareView: UICollectionViewDelegate, UICollectionViewDataSource, UICol
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     
+        let dict : [String:String] = self.muary_Social.object(at: indexPath.row) as! [String : String]
+        self.delegate?.shareView(view: self, DidSelectAt: ShareType(rawValue: dict["name"]!)!)
+        self.hide()
     }
 }

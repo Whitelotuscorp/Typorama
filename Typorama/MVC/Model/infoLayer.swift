@@ -26,7 +26,7 @@ class infoLayer: NSObject {
     var text : String = ""
     
     var main : UIImage = UIImage()
-    var image : UIImage = UIImage()
+    var image : UIImage?
     
     var color : UIColor = .black
     
@@ -34,11 +34,38 @@ class infoLayer: NSObject {
     
     var shadow : infoLayerShadow = infoLayerShadow(shadow: false)
     var gradient : infoLayerGradient = infoLayerGradient(gradient: false)
+    var eraser : infoLayerEraser = infoLayerEraser()
 
     init(color : UIColor = .black, text : String = "") {
         
+        color.isLight()
         self.color = color
         self.text = text
+    }
+    
+    @objc func getMain() -> UIImage {
+        
+        return self.main
+    }
+    
+    @objc func getImage() -> UIImage {
+        
+        return self.image!
+    }
+    
+    @objc func getColor() -> UIColor {
+        
+        return self.color
+    }
+    
+    @objc func getEraserIntensity() -> Float {
+        
+        return self.eraser.intensity
+    }
+    
+    @objc func getEraserSize() -> Float {
+        
+        return self.eraser.size
     }
 }
 
@@ -68,4 +95,10 @@ class infoLayerGradient: NSObject {
         
         self.isGradient = gradient
     }
+}
+
+class infoLayerEraser: NSObject {
+    
+    var intensity : Float = 0.0
+    var size : Float = 25.0
 }

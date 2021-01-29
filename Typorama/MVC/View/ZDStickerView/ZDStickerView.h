@@ -44,6 +44,8 @@ typedef NS_ENUM(NSUInteger, ZDStickerViewButton) {
 @property (nonatomic) CGFloat minWidth;
 @property (nonatomic) CGFloat minHeight;
 
+@property (nonatomic, strong) NSMutableArray *undo;
+
 @property (weak, nonatomic) id <ZDStickerViewDelegate> stickerViewDelegate;
 
 - (void)updateDelta;
@@ -66,6 +68,8 @@ typedef NS_ENUM(NSUInteger, ZDStickerViewButton) {
 - (void)stickerViewDidCancelEditing:(ZDStickerView *)sticker;
 - (void)stickerViewDidClose:(ZDStickerView *)sticker;
 - (void)stickerViewDidDoubleTapOnView:(ZDStickerView *)sticker;
+- (void)stickerView:(ZDStickerView *)sticker EraseImage:(UIImage *)image;
+
 #ifdef ZDSTICKERVIEW_LONGPRESS
 - (void)stickerViewDidLongPressed:(ZDStickerView *)sticker;
 #endif

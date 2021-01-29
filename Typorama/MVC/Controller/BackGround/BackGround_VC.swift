@@ -289,8 +289,9 @@ extension BackGround_VC: UICollectionViewDelegate, UICollectionViewDataSource, U
                     let h_Screen = UIScreen.main.bounds.height
                     let h_Bottom : CGFloat = (AppDelegateObj.window?.safeAreaInsets.bottom)!
                     let h_StatusBar = UIApplication.shared.statusBarFrame.height + 35 + 162 + 40 + h_Bottom
-                                    
-                    obj_Crop_VC.image = AppSingletonObj.createImage(color: self.color_Selected, size: CGSize(width: w_Screen, height: h_Screen - h_StatusBar))
+                    let multy : CGFloat = 8
+                    
+                    obj_Crop_VC.image = AppSingletonObj.createImage(color: self.color_Selected, size: CGSize(width: w_Screen * multy, height: (h_Screen - h_StatusBar) * multy))
                     self.present(obj_Crop_VC, animated: false, completion: nil)
                 }
             }
@@ -321,37 +322,48 @@ extension BackGround_VC: UICollectionViewDelegate, UICollectionViewDataSource, U
     
     func getMyPhoto() {
         
+        var isFirst : Bool = true
         if self.allPhotos.count > 0 {
             
-
+            isFirst = false
             DispatchQueue.main.async(execute: { () -> Void in
                 
                 AppSingletonObj.manageMBProgress(isShow: false)
                 self.clc_Canvas.reloadData()
             })
         }
-        else {
-            
-            PhotosAlbum.shared().getAllImagesFromPhotos { (success, results) in
                 
-                if (results != nil) {
-
+        let ary_Photoset = self.allPhotos.map { $0.asset?.localIdentifier}
+        PhotosAlbum.shared().getAllImagesFromPhotos { (success, results) in
+            
+            if (results != nil) {
+                
+                if isFirst == true {
+                    
                     let infoP = infoPhoto(asset: PHAsset())
                     infoP.image = UIImage(named: "album")!
                     self.allPhotos.append(infoP)
+                }
+                
+                for i in 0 ..< results!.count {
                     
-                    for i in 0 ..< results!.count {
+                    let asset : PHAsset = (results?.object(at: i))!
+                    
+                    if isFirst == true {
                         
-                        let asset : PHAsset = (results?.object(at: i))!
                         self.allPhotos.append(infoPhoto(asset: asset))
                     }
+                    else if !ary_Photoset.contains(asset.localIdentifier) {
                     
-                    DispatchQueue.main.async(execute: { () -> Void in
-                        
-                        AppSingletonObj.manageMBProgress(isShow: false)
-                        self.clc_Canvas.reloadData()
-                    })
+                        self.allPhotos.insert(infoPhoto(asset: asset), at: 1)
+                    }
                 }
+                
+                DispatchQueue.main.async(execute: { () -> Void in
+                    
+                    AppSingletonObj.manageMBProgress(isShow: false)
+                    self.clc_Canvas.reloadData()
+                })
             }
         }
     }

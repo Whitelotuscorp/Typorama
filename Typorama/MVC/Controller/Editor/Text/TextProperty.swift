@@ -35,11 +35,11 @@ class TextProperty: NSObject {
         let ary_Style : [LayerStyle] = [.SKYSCRAPPERTHIN]
         if ary_Style.contains(style) {
             
-            return CGFloat(AppSingletonObj.randomNumber(min: 5, max: 10))
+            return CGFloat(AppSingletonObj.randomNumber(min: 4, max: 8))
         }
         else {
             
-            return CGFloat(AppSingletonObj.randomNumber(min: 1, max: 5))
+            return CGFloat(AppSingletonObj.randomNumber(min: 1, max: 4))
         }
     }
     

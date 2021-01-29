@@ -8,6 +8,10 @@
 
 import UIKit
 import FirebaseCore
+import FBSDKCoreKit
+import FBSDKLoginKit
+import TwitterKit
+import TwitterCore
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -32,7 +36,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Local database upgrade version mapping
         DataManager.upgradeDatabaseIfRequired()       
         
-        FIRApp.configure()
+        FirebaseApp.configure()
+        
+        TWTRTwitter.sharedInstance().start(withConsumerKey:kTwitter_ConsumerKey, consumerSecret:kTwitter_ConsumerSecret)
+        ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
         
         return true
     }
@@ -53,12 +60,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        
+        AppEvents.activateApp()
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
-
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        
+        if SocialSharing.shared().type == .Facebook {
+            
+            return ApplicationDelegate.shared.application( app, open: url, options: options)
+        }
+        else if SocialSharing.shared().type == .Twitter {
+            
+            return TWTRTwitter.sharedInstance().application(app, open: url, options: options)
+        }
+        else {
+        
+            return true
+        }
+    }
 }
 

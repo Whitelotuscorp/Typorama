@@ -26,6 +26,7 @@ enum TextMenu : Int {
     @objc optional func text(view: TextVW, ChangeShadow value: Any, With type: ShadowValue)
     
     @objc optional func textDidChangeGradient(view: TextVW)
+    @objc optional func text(view: TextVW, shouldEraser isEnable: Bool)
 }
 
 class TextVW: UIView {
@@ -103,6 +104,7 @@ class TextVW: UIView {
         self.vw_Color.delegate = self
         self.vw_Shadow.delegate = self
         self.vw_Gradient.delegate = self
+        self.vw_Eraser.delegate = self
     }
     
     func setMenuArray() {
@@ -131,30 +133,43 @@ class TextVW: UIView {
         self.vw_Gradient.isHidden = true
         self.vw_Eraser.isHidden = true
         
+        self.currentLayer.allowDragging = true
+        
         if menu == TextMenu.History {
             
-            self.vw_History.isHidden = false
+            AppSingletonObj.setViewAnimation(view: self.vw_History, hidden: false)
         }
         else if menu == TextMenu.Styles {
             
-            self.vw_Style.isHidden = false
+            AppSingletonObj.setViewAnimation(view: self.vw_Style, hidden: false)
         }
         else if menu == TextMenu.Color {
             
-            self.vw_Color.isHidden = false
+            AppSingletonObj.setViewAnimation(view: self.vw_Color, hidden: false)
         }
         else if menu == TextMenu.Shadow {
             
-            self.vw_Shadow.isHidden = false
+            AppSingletonObj.setViewAnimation(view: self.vw_Shadow, hidden: false)
         }
         else if menu == TextMenu.Gradient {
             
             self.vw_Gradient.setCurrentValue(info: (self.currentLayer.info as! infoLayer).gradient)
-            self.vw_Gradient.isHidden = false
+            AppSingletonObj.setViewAnimation(view: self.vw_Gradient, hidden: false)
         }
         else {
             
-            self.vw_Eraser.isHidden = false
+            
+            self.currentLayer.allowDragging = false
+            AppSingletonObj.setViewAnimation(view: self.vw_Eraser, hidden: false)
+        }
+        
+        if menu == TextMenu.Eraser {
+            
+            self.delegate?.text?(view: self, shouldEraser: true)
+        }
+        else {
+            
+            self.delegate?.text?(view: self, shouldEraser: false)
         }
     }
     
@@ -174,10 +189,13 @@ class TextVW: UIView {
         
         self.currentLayer = sticker
         self.vw_Color.color = (sticker.info as! infoLayer).color
-        
+
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         self.vw_Color.color.getRed(&r, green: &g, blue: &b, alpha: &a)        
         self.vw_Color.sld_Opacity.value = Float(a)
+        
+        self.vw_Eraser.sld_Size.value = (sticker.info as! infoLayer).eraser.size
+        self.vw_Eraser.sld_Intensity.value = (sticker.info as! infoLayer).eraser.intensity * (-1.0)
     }
 }
 
@@ -561,3 +579,45 @@ extension TextVW: GradientVWDelegate {
         self.delegate?.textDidChangeGradient?(view: self)
     }
 }
+
+extension TextVW: EraserVWDelegate {
+    
+    func eraser(view: EraserVW, didChangeValue slider: UISlider) {
+        
+        if view.sld_Size == slider {
+            
+            (self.currentLayer.info as! infoLayer).eraser.size = slider.value
+        }
+        else {
+            
+            (self.currentLayer.info as! infoLayer).eraser.intensity = slider.value * (-1.0)
+        }
+    }
+    
+    func eraserUndoLast(view: EraserVW) {
+        
+        if let muary = self.currentLayer.undo, muary.count > 0 {
+            
+            self.currentLayer.undo.removeLastObject()
+            
+            var img_Undo = (self.currentLayer.info as! infoLayer).main
+            if self.currentLayer.undo.count > 0 {
+             
+                img_Undo = muary.lastObject as! UIImage
+                (self.currentLayer.contentView as! UIImageView).image = img_Undo
+                (self.currentLayer.info as! infoLayer).image = img_Undo
+            }
+            else {
+                
+                (self.currentLayer.contentView as! UIImageView).image = img_Undo
+                (self.currentLayer.info as! infoLayer).image = img_Undo
+                self.delegate?.textDidChangeGradient?(view: self)
+            }
+            
+            
+        }
+    }
+}
+//layer_Text.allowDragging = false
+//  layer_Text
+//  layer_Text.eraserOpacity = 0.4

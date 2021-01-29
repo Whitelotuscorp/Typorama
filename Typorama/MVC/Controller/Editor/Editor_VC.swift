@@ -194,21 +194,10 @@ class Editor_VC: UIViewController {
     }
     
     @IBAction func action_Share(_ sender: UIButton) {
-//
-//        let share = ShareView(frame: self.view.frame)
-//        self.view.addSubview(share)
-        self.hideLayerAllHander()
-        let img_Content = AppSingletonObj.image(with: self.vw_Canvas)
-        
-        AppSingletonObj.manageMBProgress(isShow: true)
-        self.hideLayerAllHander()
-//        SavePhoto.shared().mergeAllLayer(view: self.vw_Canvas, With: self.imgvw_Main) { (image) in
 
-            PhotosAlbum.shared().savePhoto(image: img_Content!, InAlbum: AppName, completionBlock: { (success) in
-                
-                AppSingletonObj.manageMBProgress(isShow: false)
-            })
-//        }
+        let share = ShareView()
+        share.delegate = self
+        share.show()
     }
     
     @IBAction func action_SelectTab(_ sender: UIButton) {
@@ -234,22 +223,22 @@ class Editor_VC: UIViewController {
         if sender == self.btn_Text {
             
             self.updateUserInteractionEnabled(type: LayerType.TEXT)
-            self.vw_Text.isHidden = false
+            AppSingletonObj.setViewAnimation(view: self.vw_Text, hidden: false)
         }
         else if sender == self.btn_Image {
             
             self.updateUserInteractionEnabled(type: LayerType.PHOTO)
-            self.vw_Image.isHidden = false
+            AppSingletonObj.setViewAnimation(view: self.vw_Image, hidden: false)
         }
         else if sender == self.btn_WaterMark {
             
             self.updateUserInteractionEnabled(type: LayerType.LOGO)
-            self.vw_WaterMark.isHidden = false
+            AppSingletonObj.setViewAnimation(view: self.vw_WaterMark, hidden: false)
         }
         else {
             
             self.updateUserInteractionEnabled(type: LayerType.SHAPE)
-            self.vw_Shape.isHidden = false
+            AppSingletonObj.setViewAnimation(view: self.vw_Shape, hidden: false)
         }
         
         self.lyl_l_SelMenu.constant = sender.superview!.frame.origin.x
@@ -258,9 +247,10 @@ class Editor_VC: UIViewController {
     
     @IBAction func action_AddNewSticker(_ sender: UIButton) {
         
+        self.action_SelectTab(self.btn_Text)
+        self.vw_Text.action_SelectMenu(menu: TextMenu.Styles)
         self.action_AddSticker()
     }
-    
     
     @objc func action_AddLogo() {
             
@@ -269,6 +259,9 @@ class Editor_VC: UIViewController {
         let textColor = self.info_Image.color.isEqual(UIColor.black) ? UIColor.white : UIColor.black
         let infoL = infoLayer(color: textColor, text: "")
         infoL.type = LayerType.LOGO
+        infoL.main = UIImage()
+        infoL.image = UIImage()
+        
         let frame_Text = CGRect(x: 0, y: 0, width: 100, height: 100)
         let imgvw_Logo = UIImageView()
         
@@ -448,6 +441,7 @@ class Editor_VC: UIViewController {
         
         let layer_Text = ZDStickerView(frame: CGRect(x: 2, y: 2, width: vw_Add.frame.width, height: vw_Add.frame.height))
         layer_Text.stickerViewDelegate = self
+  
         layer_Text.info = infoL
         layer_Text.contentView = vw_Add
         layer_Text.preventsPositionOutsideSuperview = false
@@ -466,6 +460,7 @@ class Editor_VC: UIViewController {
         
         self.vw_Canvas.bringSubviewToFront(self.sticker_Logo)
     }
+    
     func updateLayer(layer: ZDStickerView, infoS: infoStyle, isAnimate: Bool = true, width: CGFloat = 0) {
         
         self.view.isUserInteractionEnabled = false
@@ -473,6 +468,7 @@ class Editor_VC: UIViewController {
         (layer.info as! infoLayer).style = infoS
         let transform : CGAffineTransform = layer.transform
         layer.transform = CGAffineTransform.identity
+        layer.contentView.backgroundColor = .clear
         
         let center_Point : CGPoint = layer.center
         
@@ -481,269 +477,171 @@ class Editor_VC: UIViewController {
         
         let vw_Edit = UIView(frame: CGRect(x: 0, y: 0, width: wdt_Vw, height: CGFloat.greatestFiniteMagnitude))
         
-        var ary_Label : [UILabel] = []
+        var ary_Label : [UIView] = []
+        
+        let fontFamily = infoS.fontFamily
         
         let textColor : UIColor = (layer.info as! infoLayer).color
-        let fontFamily = infoS.fontFamily
-        let bgColor : UIColor = infoS.style == LayerStyle.SOLID ? (layer.info as! infoLayer).color : UIColor.clear
-        let isClearLabel : Bool = infoS.style == LayerStyle.SOLID ? true : false
+                
+        var maxStrCount : Int = 20
+        
+        let multiplier      : CGFloat = 5.0
+        var firstline_peding: CGFloat = 0
+        let padding         : CGFloat = 15
+        
         let x_Gap : CGFloat = infoS.style == LayerStyle.SOLID ? (wdt_Vw / 30) : 0
-//        let y_Gap : CGFloat = 0
         let y_Gap : CGFloat = infoS.lineSpacing
+        
         let w_Border : CGFloat = wdt_Vw / (20 * infoS.borderDiv)
-        var h_Line : CGFloat = wdt_Vw / (30 * infoS.lineDiv)
+        var h_Line   : CGFloat = wdt_Vw / (30 * infoS.lineDiv)
         h_Line = h_Line > 5 ? 5 : h_Line
-        
-        let lbl_Border = UILabel()
-        lbl_Border.clipsToBounds = true
-        lbl_Border.layer.borderColor = infoS.style == LayerStyle.LEFT ? UIColor.clear.cgColor : textColor.cgColor
-        lbl_Border.layer.borderWidth = effect.isBorder == true ? w_Border : 0
-        vw_Edit.addSubview(lbl_Border)
-        ary_Label.append(lbl_Border)
-        
-        if effect.isBorder == true && infoS.style == LayerStyle.ONELASTSMILE {
-            
-            var white : CGFloat = 0
-            textColor.getWhite(&white, alpha: nil)
-
-            lbl_Border.backgroundColor = white >= 0.5 ? .black : .white
-            lbl_Border.layer.borderWidth = 0.0
-        }
-        else {
-            
-            lbl_Border.backgroundColor = .clear
-        }
-        
-        var fl_pd : CGFloat = 0
-        var isPrevLine : Bool = false
-        var maxStrFont : Int = 20
-        let padding : CGFloat = 10
+                
         var y : CGFloat = w_Border + h_Line + padding
         let x : CGFloat = w_Border + h_Line + padding
+        
+        let isClearLabel : Bool = infoS.style == LayerStyle.SOLID ? true : false
+        var isPrevLine : Bool = false
+        
+        let imgvw_Border = UIImageView()
+        imgvw_Border.contentMode = .scaleAspectFit
+        vw_Edit.addSubview(imgvw_Border)
+        ary_Label.append(imgvw_Border)
         
         if infoS.isJustifiedText == false {
             
             let max = effect.texts.max(by: {$1.text.count > $0.text.count})
-            let w_Label = wdt_Vw - ((w_Border + h_Line + padding) * 2)
-            var sz_Add : CGSize = CGSize(width: w_Label, height: h_Line)
-            
-            maxStrFont = Int(2.1 * wdt_Vw / CGFloat(max!.text.count))            
-            
-            let paragraphStyle = NSMutableParagraphStyle()
-            paragraphStyle.alignment = infoS.textAlignment
-                        
-            var attrs = [NSAttributedString.Key.font: UIFont(name: fontFamily, size: CGFloat(maxStrFont)) as Any,
-                         NSAttributedString.Key.foregroundColor : textColor,
-                         NSAttributedString.Key.paragraphStyle: paragraphStyle,
-                         NSAttributedString.Key.kern : NSNumber(value: Float(infoS.charcterSpacing))]
-            
-            let string = (infoS.preText + max!.text + infoS.postText).uppercased()
-                        
-            var isIncFont : Bool = true
-            while(isIncFont == true){
-                
-                maxStrFont -= 1
-                
-                attrs[NSAttributedString.Key.font] = UIFont(name: fontFamily, size: CGFloat(maxStrFont)) as Any
-                sz_Add = (string as NSString).size(withAttributes: attrs)
-                
-                if maxStrFont < 3 || sz_Add.width < w_Label {
-                    
-                    isIncFont = false
-                }
-            }
+            maxStrCount = (infoS.preText + max!.text + infoS.postText).count
         }
         
         for info in effect.texts {
             
+            let str_Text = (infoS.preText + info.text + infoS.postText).uppercased()
+            
             let w_Label = wdt_Vw - ((w_Border + h_Line + padding) * 2)
             var sz_Add : CGSize = CGSize(width: w_Label, height: h_Line)
-            
-            let lbl_Edit = PaddingLabel(frame: CGRect(x: x, y: y, width: w_Label, height: CGFloat.greatestFiniteMagnitude))
-            vw_Edit.addSubview(lbl_Edit)
-                        
-            let divFont : CGFloat = isClearLabel == true ? 2.0 : 2.1
+                
+            let divFont     : CGFloat = isClearLabel == true ? 2.0 : 2.1
+            var h_LabelU    : CGFloat = 0
+            var font_pedding: CGFloat = 0
             
             var largestFontSize: CGFloat = 20
+            
             if infoS.isJustifiedText == false {
                 
-                largestFontSize = CGFloat(maxStrFont)
+                largestFontSize = divFont * wdt_Vw / CGFloat(maxStrCount)
             }
             else if (info.isLine == false || info.text.count > 0) {
                 
-                largestFontSize = divFont * wdt_Vw / CGFloat(info.text.count)
+                largestFontSize = divFont * wdt_Vw / CGFloat(str_Text.count)
             }
+                        
+//            let paragraphStyle = NSMutableParagraphStyle()
+//            paragraphStyle.alignment = infoS.textAlignment
             
-            lbl_Edit.text = (infoS.preText + info.text + infoS.postText).uppercased()
-            lbl_Edit.font = UIFont(name: fontFamily, size: largestFontSize)
-            lbl_Edit.numberOfLines = 1
-            lbl_Edit.minimumScaleFactor = 0.01
-            lbl_Edit.lineBreakMode = .byWordWrapping
-            lbl_Edit.textAlignment = infoS.textAlignment //== LayerStyle.LEFT ? .left : .center
-
-            lbl_Edit.adjustsFontSizeToFitWidth = true
-            lbl_Edit.textColor = textColor
-            
-            let attributedString = NSMutableAttributedString(attributedString: lbl_Edit.attributedText!)
-            //
-            //            let style = NSMutableParagraphStyle()
-            //            style.lineHeightMultiple = infoS.lineSpacing
-            //            style.alignment = lbl_Edit.textAlignment
-            //            style.lineBreakMode = .byWordWrapping
-            //            //NSAttributedString.Key.paragraphStyle : style,
-            //
-            attributedString.addAttributes([NSAttributedString.Key.kern : NSNumber(value: Float(infoS.charcterSpacing))],
-                                           range: NSRange(location: 0, length: lbl_Edit.text!.count))
-            
-            lbl_Edit.attributedText = attributedString
-            var h_LabelU : CGFloat = 0
-            var pd : CGFloat = 0
-            var charcterSpacing = infoS.charcterSpacing
-            
+            var dict_Attributes = [NSAttributedString.Key.font : UIFont(name: fontFamily, size: largestFontSize * multiplier) as Any,
+                         NSAttributedString.Key.foregroundColor : textColor,
+//                         NSAttributedString.Key.paragraphStyle : paragraphStyle,
+                         NSAttributedString.Key.kern : NSNumber(value: Float(infoS.charcterSpacing))]
+                        
             if info.isLine == true {
                 
                 h_LabelU = 0
-                lbl_Edit.backgroundColor = textColor
-                sz_Add = CGSize(width: w_Label, height: h_Line)
-            }
-            else if infoS.isJustifiedText == true {
-                
-                var w_LabelU = w_Label
-                
-                if isClearLabel == true {
-                    
-                    h_LabelU = 6
-                    w_LabelU = w_Label - 50
-                }
-                print("bf font ---> \(largestFontSize)")
-                while(lbl_Edit.sizeThatFits(CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)).width > w_LabelU){
-                    
-                    sz_Add = lbl_Edit.sizeThatFits(CGSize(width: w_LabelU, height: CGFloat.greatestFiniteMagnitude))
-                    
-                    if sz_Add.width < w_LabelU {
-                        
-                        largestFontSize += 0.30
-                    }
-                    else if sz_Add.width > w_LabelU {
-                        
-                        largestFontSize -= 0.30
-                    }
-                    
-                    
-                    if largestFontSize < 3 {
-                        
-                        largestFontSize = 2.5
-                        break
-                    }
-                    lbl_Edit.font = UIFont(name: lbl_Edit.font.fontName, size: largestFontSize)
-                }
-                print("af font ---> \(largestFontSize)")
-                //                print("dt space ---> \(w_LabelU)")
-                
-                lbl_Edit.backgroundColor = bgColor
-                sz_Add = lbl_Edit.sizeThatFits(CGSize(width: w_LabelU, height: CGFloat.greatestFiniteMagnitude))
-                //                print("bf space ---> \(sz_Add)")
-                if sz_Add.width != w_LabelU {
-                    
-                    while(lbl_Edit.sizeThatFits(CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)).width < w_LabelU){
-                        
-                        if sz_Add.width < w_LabelU {
-                            
-                            charcterSpacing += 0.05
-                        }
-                        else if sz_Add.width > w_LabelU {
-                            
-                            charcterSpacing -= 0.05
-                        }
-                        
-                        let attributedString = NSMutableAttributedString(attributedString: lbl_Edit.attributedText!)
-                        
-                        attributedString.addAttributes([NSAttributedString.Key.kern : NSNumber(value: Float(charcterSpacing))],
-                                                       range: NSRange(location: 0, length: lbl_Edit.text!.count))
-                        
-                        lbl_Edit.attributedText = attributedString
-                        sz_Add = lbl_Edit.sizeThatFits(CGSize(width: w_LabelU, height: CGFloat.greatestFiniteMagnitude))
-                        
-                        //                        print("spc space ---> \(charcterSpacing)---> \(sz_Add)")
-                        if (lbl_Edit.frame.width > w_LabelU || charcterSpacing > largestFontSize || charcterSpacing < -10) {
-                            
-                            break
-                        }
-                    }
-                }
-                
-                pd = -largestFontSize / 10
-                
-                lbl_Edit.topInset = pd * (-1)
-                lbl_Edit.bottomInset = pd
-                
-                sz_Add = lbl_Edit.sizeThatFits(CGSize(width: w_LabelU, height: CGFloat.greatestFiniteMagnitude))
-                //                print("af space ---> \(sz_Add)")
+                sz_Add = CGSize(width: w_Label * multiplier, height: h_Line * multiplier)
             }
             else {
-                
-                sz_Add = lbl_Edit.sizeThatFits(CGSize(width: w_Label, height: CGFloat.greatestFiniteMagnitude))
+         
+                sz_Add = (str_Text as NSString).size(withAttributes: dict_Attributes)
+                font_pedding = CGFloat(-(largestFontSize / 10))
             }
             
-            if fl_pd == 0 && isClearLabel == false {
+            if firstline_peding == 0 && isClearLabel == false {
                 
-                fl_pd = pd
-            }
-            
-            let ln_PrevLine : CGFloat = isPrevLine == true ? 2 : 0
-            
-            if info.isLine == true || isClearLabel == true {
-                
-                pd = 0
-                let ln_pd : CGFloat = info.isLine == true ? 2 : 0
-                lbl_Edit.frame = CGRect(x: x, y: y + ln_pd, width: w_Label, height: sz_Add.height + h_LabelU)
-            }
-            else {
-                
-                lbl_Edit.frame = CGRect(x: x, y: y + pd + ln_PrevLine, width: w_Label, height: sz_Add.height + h_LabelU + (pd * 2))
+                firstline_peding = font_pedding
             }
             
             var yClearLabel : CGFloat = 0
+            var img : UIImage = UIImage()
+            
             if isClearLabel == true && info.isLine != true {
                 
-                yClearLabel = lbl_Edit.frame.height / 10;
+                dict_Attributes[.font] = UIFont(name: fontFamily, size: largestFontSize * multiplier / 1.6)
+                img = AppSingletonObj.textMaskedImage(size: sz_Add, text: str_Text, attributes: dict_Attributes)!
+                yClearLabel = 0;
+            }
+            else {                
                 
-                let objCTLbl = RSMaskedLabel(frame: lbl_Edit.frame)
-                vw_Edit.addSubview(objCTLbl)
-                lbl_Edit.removeFromSuperview()
-                objCTLbl.text = info.text.uppercased()
-                objCTLbl.font = lbl_Edit.font
-                objCTLbl.backgroundColor = bgColor
-                objCTLbl.numberOfLines = 1
-                objCTLbl.minimumScaleFactor = 0.01
-                objCTLbl.lineBreakMode = .byWordWrapping
-                objCTLbl.textAlignment = .center
-                objCTLbl.adjustsFontSizeToFitWidth = true
+                if info.isLine == true {
+                    
+                    img = AppSingletonObj.createImage(color: textColor, size: sz_Add)
+                }
+                else {
+                    
+                    let renderer = UIGraphicsImageRenderer(size: CGSize(width: sz_Add.width + infoS.rightInset, height: sz_Add.height + (font_pedding * 2)))
+                    img = renderer.image { ctx in
+                        
+                        str_Text.draw(with: CGRect(x: 0, y: font_pedding, width: sz_Add.width + infoS.rightInset, height: sz_Add.height), options: .usesLineFragmentOrigin, attributes: dict_Attributes, context: nil)
+                    }
+                }
                 
-                let attributedString = NSMutableAttributedString(attributedString: objCTLbl.attributedText!)
-                attributedString.addAttributes([NSAttributedString.Key.kern : NSNumber(value: Float(charcterSpacing))],
-                                               range: NSRange(location: 0, length: objCTLbl.text!.count))
-                objCTLbl.attributedText = attributedString
+                yClearLabel = -3
+            }
+            
+            sz_Add = img.size
+            
+            let ln_PrevLine : CGFloat = isPrevLine == true ? 2 : 0
+            var newRect = CGRect.zero
+            if info.isLine == true || isClearLabel == true {
                 
-                ary_Label.append(objCTLbl)
+                font_pedding = 0
+                let ln_pd : CGFloat = info.isLine == true ? 2 : 0
+                newRect = CGRect(x: x, y: y + ln_pd, width: w_Label, height: (sz_Add.height / multiplier) + h_LabelU)
+            }
+            else if infoS.isJustifiedText == true {
+                
+                newRect = CGRect(x: x, y: y + font_pedding + ln_PrevLine, width: w_Label, height: (sz_Add.height / multiplier) + h_LabelU + (font_pedding * 2))
             }
             else {
                 
-                yClearLabel = -3
-                ary_Label.append(lbl_Edit)
+                var newX : CGFloat = x
+                var newW = (sz_Add.width / multiplier)
+                var newH = (sz_Add.height / multiplier)
+                
+                if w_Label < newW {
+                    
+                    newW = w_Label
+                    newH = (w_Label * newH) / newW
+                }
+                
+                if infoS.textAlignment == .center {
+                    
+                    newX = x + (w_Label - newW) / 2
+                }
+                else if infoS.textAlignment == .right {
+                    
+                    newX = x + (w_Label - newW)
+                }
+                
+                newRect = CGRect(x: newX, y: y + font_pedding + ln_PrevLine, width: newW, height: newH + h_LabelU + (font_pedding * 2))
             }
+            
+            
+            let imgvw_Con = UIImageView(image: img)
+            imgvw_Con.frame = newRect
+            imgvw_Con.contentMode = .redraw
+            vw_Edit.addSubview(imgvw_Con)
+            ary_Label.append(imgvw_Con)
             
             isPrevLine = info.isLine
             
-            y = y + lbl_Edit.frame.height + x_Gap + y_Gap + pd - yClearLabel
+            y = y + newRect.height + x_Gap + y_Gap + font_pedding - yClearLabel
         }
         
         var rect = vw_Edit.frame
         rect.size.height = y + w_Border + h_Line + padding - y_Gap - x_Gap //- fl_pd
         vw_Edit.frame = rect
-        lbl_Border.frame = CGRect(x: padding, y: padding, width: rect.width - padding * 2, height: rect.height - padding * 2)
+        imgvw_Border.frame = CGRect(x: padding, y: padding, width: rect.width - padding * 2, height: rect.height - padding * 2)
         
-        let frame_Text = CGRect(x: (self.vw_Canvas.frame.width - vw_Edit.frame.width) / 2, y: (self.vw_Canvas.frame.height - vw_Edit.frame.height) / 2, width: vw_Edit.frame.width + 20, height: vw_Edit.frame.height + 20)
+        let frame_Text = CGRect(x: (self.vw_Canvas.frame.width - vw_Edit.frame.width) / 2, y: (self.vw_Canvas.frame.height - vw_Edit.frame.height) / 2, width: vw_Edit.frame.width, height: vw_Edit.frame.height)
         
         layer.frame = frame_Text
         layer.updateDelta()
@@ -759,10 +657,22 @@ class Editor_VC: UIViewController {
             return
         }
         
-        let img_Content = AppSingletonObj.image(with: vw_Edit)
+        if effect.isBorder == true && infoS.style == LayerStyle.ONELASTSMILE {
+         
+            var white : CGFloat = 0
+            textColor.getWhite(&white, alpha: nil)
+            imgvw_Border.backgroundColor = white >= 0.5 ? .black : .white
+        }
+        else if effect.isBorder == true {
+         
+            imgvw_Border.image = AppSingletonObj.drawRectangle(size: CGSize(width: imgvw_Border.frame.width * multiplier, height: imgvw_Border.frame.height * multiplier), WithLine: w_Border * multiplier, color: textColor)
+        }
         
-        //        let img_Gradient = AppSingletonObj.setImageClipMask(img_Content, color: UIColor(patternImage: AppSingletonObj.imageWithGradient(img: img_Content)))
-        
+        var img_Content = AppSingletonObj.image(with: vw_Edit)
+        SavePhoto.shared().mergeViewLayer(view: vw_Edit, With: multiplier) { (image) in
+            
+            img_Content = image
+        }
         
         
         if isAnimate == true {
@@ -772,13 +682,6 @@ class Editor_VC: UIViewController {
                 let lbl = ary_Label[i]
                 lbl.alpha = 0.0
                 lbl.transform = CGAffineTransform(scaleX: 2, y: 2)
-                //                UIView.animate(withDuration: 0.23, delay: 0.23 * Double(i), options: .curveEaseOut, animations: {
-                //                    lbl.transform = CGAffineTransform.identity
-                //                    lbl.alpha = 1.0
-                //                }) { finished in
-                //
-                //                    self.setLayerContent(image: img_Content!, On: layer)
-                //                }
             }
             
             self.recursiveAnimation(ary_Label: ary_Label, index: 0) { (index) in
@@ -792,332 +695,9 @@ class Editor_VC: UIViewController {
             self.setLayerContent(image: img_Content!, On: layer)
             self.view.isUserInteractionEnabled = true
         }
+        
     }
-    func updateLayer1(layer: ZDStickerView, infoS: infoStyle, isAnimate: Bool = true, width: CGFloat = 0) {
-        
-        self.view.isUserInteractionEnabled = false
-        layer.hideEditingHandles()
-        (layer.info as! infoLayer).style = infoS
-        let transform : CGAffineTransform = layer.transform
-        layer.transform = CGAffineTransform.identity
-        
-        let center_Point : CGPoint = layer.center
-        
-        let effect =  infoS.effect
-        
-//        let wdt_Vw : CGFloat = layer.bounds.width
-        let wdt_Vw : CGFloat = width == 0 ? (self.vw_Editor.frame.width / 2) + 20 : width
-        
-        let vw_Edit = UIView(frame: CGRect(x: 0, y: 0, width: wdt_Vw, height: CGFloat.greatestFiniteMagnitude))
-        
-        var ary_Label : [UIImageView] = []
-        
-        let textColor : UIColor = (layer.info as! infoLayer).color
-        let fontFamily = infoS.fontFamily
-        let bgColor : UIColor = infoS.style == LayerStyle.SOLID ? (layer.info as! infoLayer).color : UIColor.clear
-        let isClearLabel : Bool = infoS.style == LayerStyle.SOLID ? true : false
-        let x_Gap : CGFloat = infoS.style == LayerStyle.SOLID ? (wdt_Vw / 30) : 0
-        let y_Gap : CGFloat = 0
-//        let y_Gap : CGFloat = infoS.style == LayerStyle.SOLID ? 0 : infoS.lineSpacing
-        let w_Border : CGFloat = wdt_Vw / (20 * infoS.borderDiv)
-        var h_Line : CGFloat = wdt_Vw / (30 * infoS.lineDiv)
-        h_Line = h_Line > 5 ? 5 : 5//h_Line
-        
-        var y : CGFloat = w_Border + h_Line
-        
-        let lbl_Border = UILabel()
-        lbl_Border.clipsToBounds = true
-        lbl_Border.layer.borderColor = textColor.cgColor
-        lbl_Border.layer.borderWidth = effect.isBorder == true ? w_Border : 0
-        vw_Edit.addSubview(lbl_Border)
-//        ary_Label.append(lbl_Border)
-        
-        var fl_pd : CGFloat = 0
-        var isPrevLine : Bool = false
-        
-        for info in effect.texts {
-            
-            let w_Label = wdt_Vw - ((w_Border + h_Line) * 2)
-            var sz_Add : CGSize = CGSize(width: w_Label, height: h_Line)
-            
-            let divFont : CGFloat = isClearLabel == true ? 2.0 : 2.1
-            
-            var largestFontSize: Int = 20
-            if info.isLine == false || info.text.count > 0 {
-                
-                largestFontSize = Int(divFont * wdt_Vw / CGFloat(info.text.count))
-            }
-            
-            let paragraphStyle = NSMutableParagraphStyle()
-            paragraphStyle.alignment = .center
-            
-            var attrs = [NSAttributedString.Key.font: UIFont(name: fontFamily, size: CGFloat(largestFontSize)) as Any,
-                         NSAttributedString.Key.foregroundColor : textColor,
-                         NSAttributedString.Key.paragraphStyle: paragraphStyle,
-                         NSAttributedString.Key.kern : NSNumber(value: Float(infoS.charcterSpacing))]
-            
-            let string = info.text
-            
-            var h_LabelU : CGFloat = 0
-            var pd : CGFloat = 0
-            var charcterSpacing = infoS.charcterSpacing
-            
-            if info.isLine == true {
-                
-                h_LabelU = 0
-                sz_Add = CGSize(width: w_Label, height: h_Line)
-            }
-            else {
-                
-                var w_LabelU = w_Label
-                
-                if isClearLabel == true {
-                    
-                    h_LabelU = 6
-                    w_LabelU = w_Label - 50
-                }
-                
-                sz_Add = (string as NSString).size(withAttributes: attrs)
-                
-                var isIncFont : Bool = true
-                while(isIncFont == true){
-                    
-                    largestFontSize += 1
-                    
-                    attrs[NSAttributedString.Key.font] = UIFont(name: fontFamily, size: CGFloat(largestFontSize)) as Any
-                    sz_Add = (string as NSString).size(withAttributes: attrs)
-                    
-                    if largestFontSize < 3 || sz_Add.width >= w_LabelU {
-                        
-                        attrs[NSAttributedString.Key.font] = UIFont(name: fontFamily, size: CGFloat(largestFontSize - 1)) as Any
-                        isIncFont = false
-                    }
-                }
-                
-                sz_Add = (string as NSString).size(withAttributes: attrs)
-                print("af font ---> \(largestFontSize)")
-        
-                var isIncSpace : Bool = true
-                while(isIncSpace == true){
-                    
-                    charcterSpacing += 0.05
-                    
-                    attrs[NSAttributedString.Key.kern] = NSNumber(value: Float(charcterSpacing))
-                    sz_Add = (string as NSString).size(withAttributes: attrs)
-                    
-                    if sz_Add.width >= w_LabelU {
-                        
-                        isIncSpace = false
-                    }
-                }
-
-                sz_Add = (string as NSString).size(withAttributes: attrs)
-                pd = CGFloat(-largestFontSize / 15)
-            }
-            
-            if fl_pd == 0 && isClearLabel == false {
-               
-                fl_pd = pd
-            }
-     
-            let ln_PrevLine : CGFloat = isPrevLine == true ? 2 : 0
-            var newRect = CGRect.zero
-            
-            if info.isLine == true || isClearLabel == true {
-             
-                pd = 0
-                let ln_pd : CGFloat = info.isLine == true ? 2 : 0
-                newRect = CGRect(x: w_Border + h_Line, y: y + ln_pd, width: w_Label, height: sz_Add.height + h_LabelU)
-            }
-            else {
-            
-                newRect = CGRect(x: w_Border + h_Line, y: y + pd + ln_PrevLine, width: w_Label, height: sz_Add.height + h_LabelU + (pd * 2))
-            }
-      
-            
-            
-            var yClearLabel : CGFloat = 0
-            if isClearLabel == true && info.isLine != true {
-                
-                yClearLabel = newRect.height / 10;
-                
-                let objCTLbl = RSMaskedLabel(frame: newRect)
-                vw_Edit.addSubview(objCTLbl)
-                
-                objCTLbl.text = info.text.uppercased()
-                objCTLbl.font = (attrs[NSAttributedString.Key.font] as! UIFont)
-                objCTLbl.backgroundColor = bgColor                
-                objCTLbl.numberOfLines = 1
-                objCTLbl.minimumScaleFactor = 0.01
-                objCTLbl.lineBreakMode = .byWordWrapping
-                objCTLbl.textAlignment = .center
-                objCTLbl.adjustsFontSizeToFitWidth = true
-                
-                let attributedString = NSMutableAttributedString(attributedString: objCTLbl.attributedText!)
-                attributedString.addAttributes(attrs, range: NSRange(location: 0, length: objCTLbl.text!.count))
-                objCTLbl.attributedText = attributedString
-                
-//                ary_Label.append(objCTLbl)
-            }
-            else {
-            
-                var img : UIImage = UIImage()
-                if info.isLine == true {
-                    
-                    img = AppSingletonObj.createImage(color: textColor, size: sz_Add)
-                }
-                else {
-                    
-                    let renderer = UIGraphicsImageRenderer(size: CGSize(width: sz_Add.width, height: sz_Add.height + pd * 2))
-                    img = renderer.image { ctx in
-                        
-                        string.draw(with: CGRect(x: 0, y: pd, width: sz_Add.width, height: sz_Add.height + pd * 2), options: .usesLineFragmentOrigin, attributes: attrs, context: nil)
-                    }
-                }
-                
-//                 let imgMask = self.maskImage(rect: CGRect(x: 0, y: 0, width: sz_Add.width, height: sz_Add.height), color: textColor, maskImage: img)
-//                let imgMask = self.maskImage(image: AppSingletonObj.createImage(color: textColor, size: sz_Add), withMask: img)
-                
-                let imgvw_Con = UIImageView(image: img)
-                imgvw_Con.frame = newRect
-                imgvw_Con.contentMode = .redraw
-                vw_Edit.addSubview(imgvw_Con)
-                
-                yClearLabel = -3
-                ary_Label.append(imgvw_Con)
-            }
-            
-            isPrevLine = info.isLine
-            
-            y = y + newRect.height + x_Gap + y_Gap + pd - yClearLabel
-        }        
-        
-        var rect = vw_Edit.frame
-        rect.size.height = y + w_Border + h_Line - y_Gap - x_Gap //- fl_pd
-        vw_Edit.frame = rect
-        lbl_Border.frame = rect
-        
-        let frame_Text = CGRect(x: (self.vw_Canvas.frame.width - vw_Edit.frame.width) / 2, y: (self.vw_Canvas.frame.height - vw_Edit.frame.height) / 2, width: vw_Edit.frame.width + 30, height: vw_Edit.frame.height + 30)
-        
-        layer.frame = frame_Text
-        layer.contentView = vw_Edit
-        layer.shadowView = UIView()
-        layer.center = center_Point
-        layer.transform = transform
-        
-        if self.vw_Canvas.frame.height + 20 < frame_Text.height && width == 0 {
-            
-            let wdt_Reduce = (self.vw_Canvas.frame.height * (frame_Text.width - 30)) / frame_Text.height
-            self.updateLayer(layer: layer, infoS: infoS, isAnimate: isAnimate, width: wdt_Reduce - 20)
-            return
-        }
-        
-        let img_Content = AppSingletonObj.image(with: vw_Edit)
-        
-//        let img_Gradient = AppSingletonObj.setImageClipMask(img_Content, color: UIColor(patternImage: AppSingletonObj.imageWithGradient(img: img_Content)))
-        
-        
-        
-        if isAnimate == true {
-         
-            for i in 0 ..< ary_Label.count {
-                
-                let lbl = ary_Label[i]
-                lbl.alpha = 0.0
-                lbl.transform = CGAffineTransform(scaleX: 2, y: 2)
-//                UIView.animate(withDuration: 0.23, delay: 0.23 * Double(i), options: .curveEaseOut, animations: {
-//                    lbl.transform = CGAffineTransform.identity
-//                    lbl.alpha = 1.0
-//                }) { finished in
-//
-//                    self.setLayerContent(image: img_Content!, On: layer)
-//                }
-            }
-            
-            self.recursiveAnimation(ary_ImgVw: ary_Label, index: 0) { (index) in
-                
-                self.setLayerContent(image: img_Content!, On: layer)
-                self.view.isUserInteractionEnabled = true
-            }
-        }
-        else {
-            
-            self.setLayerContent(image: img_Content!, On: layer)
-            self.view.isUserInteractionEnabled = true
-        }
-    }
-    
-    func maskImage(rect: CGRect, color: UIColor, maskImage: UIImage) -> UIImage {
-        
-//        let maskRef = maskImage.cgImage
-//
-//        let mask = CGImage(
-//            maskWidth: maskRef!.width,
-//            height: maskRef!.height,
-//            bitsPerComponent: maskRef!.bitsPerComponent,
-//            bitsPerPixel: maskRef!.bitsPerPixel,
-//            bytesPerRow: maskRef!.bytesPerRow,
-//            provider: maskRef!.dataProvider!,
-//            decode: nil,
-//            shouldInterpolate: false)
-//
-//        let masked = image.cgImage!.masking(mask!)
-//        let maskedImage = UIImage(cgImage: masked!)
-//
-//        return maskedImage
-
-        UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0)
-        
-        var context = UIGraphicsGetCurrentContext()
-        var image = maskImage.cgImage
-        UIGraphicsEndImageContext()
-        
-        // Revert to normal graphics context for the rest of the rendering
-        context = UIGraphicsGetCurrentContext()
-        
-        context?.concatenate(CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: rect.height))
-        
-        // create a mask from the normally rendered text
-        var mask = CGImage.init(maskWidth: image!.width, height: image!.height, bitsPerComponent: image!.bitsPerComponent, bitsPerPixel: image!.bitsPerPixel, bytesPerRow: image!.bytesPerRow, provider: image!.dataProvider!, decode: image!.decode, shouldInterpolate: image!.shouldInterpolate)
-        image = nil
-        
-        // wipe the slate clean
-        context?.clear(rect)
-        
-        context?.saveGState()
-        context?.clip(to: rect, mask: mask!)
-        
-        mask = nil
-        
-        color.set()
-        context?.fill(rect)
-        
-        context?.restoreGState()
-        
-        let img_Main = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return img_Main!
-    }
-    func recursiveAnimation(ary_ImgVw: [UIImageView], index: Int, Handler:@escaping (_ index: Int) -> Void){
-        
-        if ary_ImgVw.count > index {
-            
-            let lbl = ary_ImgVw[index]
-            UIView.animate(withDuration: 0.105, delay:0.0, options: .curveEaseOut, animations: {
-                lbl.transform = CGAffineTransform.identity
-                lbl.alpha = 1.0
-            }) { finished in
-                
-                self.recursiveAnimation(ary_ImgVw: ary_ImgVw, index: index + 1, Handler: Handler)
-            }
-        }
-        else {
-            
-            Handler(index)
-        }
-    }
-    func recursiveAnimation(ary_Label: [UILabel], index: Int, Handler:@escaping (_ index: Int) -> Void){
+    func recursiveAnimation(ary_Label: [UIView], index: Int, Handler:@escaping (_ index: Int) -> Void){
         
         if ary_Label.count > index {
             
@@ -1139,12 +719,13 @@ class Editor_VC: UIViewController {
         
         (self.sticker_Selected.info as! infoLayer).main = image
         (self.sticker_Selected.info as! infoLayer).image = image
+        
         let imgvw_Con = UIImageView(image: image)        
         imgvw_Con.contentMode = .scaleAspectFit
         layer.contentView = imgvw_Con
+                
         let imgvw_Shadow = UIImageView(image: image)
         layer.shadowView = imgvw_Shadow
-        
         layer.shadowView.isHidden = !(self.sticker_Selected.info as! infoLayer).shadow.isShadow
         
         if (self.sticker_Selected.info as! infoLayer).shadow.isShadow == true {
@@ -1174,6 +755,7 @@ class Editor_VC: UIViewController {
         (self.sticker_Selected.info as! infoLayer).image = img_Main!
         let imgvw_Con = UIImageView(image: img_Main)
         layer.contentView = imgvw_Con
+        self.updateContentBackGround(layer: layer)
         
         if (self.sticker_Selected.info as! infoLayer).shadow.isShadow == true {
             
@@ -1221,11 +803,32 @@ class Editor_VC: UIViewController {
             let img_Gradient =  GradientLayer.shared().gradientImageWithBounds(bounds: rect, colors: infoLL.gradient.colors, angleº: infoLL.gradient.direction, location: infoLL.gradient.ratio)
             
             let img_Main = AppSingletonObj.setImageClipMask(infoLL.main, color: UIColor.init(patternImage: img_Gradient))
+            (layer.info as! infoLayer).image = img_Main!
             (layer.contentView as! UIImageView).image = img_Main
         }
         else {
             
-            (layer.contentView as! UIImageView).image = infoLL.image
+            (layer.contentView as! UIImageView).image = infoLL.main
+            (layer.info as! infoLayer).image = infoLL.main
+        }
+        
+        self.updateContentBackGround(layer: layer)
+    }
+    
+    func updateContentBackGround(layer: ZDStickerView) {
+        
+        let infoS =  (layer.info as! infoLayer).style
+        let effect =  infoS.effect
+        
+        if effect.isBorder == true && infoS.style == LayerStyle.ONELASTSMILE {
+            
+            let textColor : UIColor = (layer.info as! infoLayer).color
+            var white : CGFloat = 0
+            textColor.getWhite(&white, alpha: nil)
+            
+            let imageBg = AppSingletonObj.setBackGroundColor((layer.info as! infoLayer).image, color: white >= 0.5 ? .black : .white)
+            (layer.info as! infoLayer).image = imageBg!
+            (layer.contentView as! UIImageView).image = imageBg
         }
     }
     
@@ -1298,6 +901,7 @@ extension Editor_VC: ZDStickerViewDelegate {
     
     func stickerViewDidClose(_ sticker: ZDStickerView!) {
         
+        self.vw_Text.action_SelectMenu(menu: TextMenu.Styles)
 //        print("stickerViewDidClose")
     }
     func stickerViewDidDoubleTap(on sticker: ZDStickerView!) {
@@ -1317,6 +921,11 @@ extension Editor_VC: ZDStickerViewDelegate {
     }
     func stickerViewDidCustomButtonTap(_ sticker: ZDStickerView!) {
         
+    }
+    
+    func stickerView(_ sticker: ZDStickerView!, eraseImage image: UIImage!) {
+        
+        (sticker.info as! infoLayer).image = image
     }
 }
 extension Editor_VC: TextEditorDelegate {
@@ -1398,6 +1007,17 @@ extension Editor_VC: TextVWDelegate {
     func textDidChangeGradient(view: TextVW) {
         
         self.updateGradientValue(layer: self.sticker_Selected)
+    }
+    
+    func text(view: TextVW, shouldEraser isEnable: Bool) {
+        
+        for vw in self.vw_Canvas.subviews {
+            
+            if(vw.isKind(of: ZDStickerView.self)) {
+                                
+                (vw as! ZDStickerView).allowDragging = !isEnable
+            }
+        }
     }
 }
 
@@ -1524,13 +1144,36 @@ extension Editor_VC: TOCropViewControllerDelegate {
                 
                 if self.openImagePickerType == ImagePickerType.Logo {
                     
-                    self.vw_WaterMark.addNewLogo(image: image)
+                    self.vw_WaterMark.addNewLogo(image: AppSingletonObj.setPaddingImage(image, padding: 20)!)
                 }
                 else {
                     
-                    self.action_AddImage(image: image, type: LayerType.PHOTO)
+                    self.action_AddImage(image: AppSingletonObj.setPaddingImage(image, padding: 20)!, type: LayerType.PHOTO)
                 }
             }
         }
+    }
+}
+
+extension Editor_VC: ShareViewDelegate {
+    
+    func shareView(view: ShareView, DidSelectAt type: ShareType) {
+        
+//        let img_Content = AppSingletonObj.image(with: self.vw_Canvas)
+        AppSingletonObj.manageMBProgress(isShow: true)
+        self.hideLayerAllHander()
+        SavePhoto.shared().mergeAllLayer(view: self.vw_Canvas, With: self.imgvw_Main) { (image) in
+            
+            AppSingletonObj.manageMBProgress(isShow: false)
+            SocialSharing.shared().shareImage(image: image!, With: type, delegate: self)
+        }
+    }
+}
+
+extension Editor_VC: SocialSharingDelegate {
+    
+    func socialShare(type: ShareType, success: Bool, error: Error?) {
+        
+        
     }
 }

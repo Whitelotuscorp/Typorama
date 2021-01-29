@@ -125,6 +125,8 @@ open class IGRPhotoTweakViewController: UIViewController {
         
     }
     
+    
+    
     // MARK: - Public
     
     public func resetView() {
@@ -206,5 +208,9 @@ open class IGRPhotoTweakViewController: UIViewController {
     open func customCanvasInsets() -> UIEdgeInsets {
         
         return UIEdgeInsets(top: kCanvasHeaderHeigth, left: 0, bottom: 0, right: 0)
+    }
+    
+    open func customCropTweakViewDidMove(_ cropView: IGRCropView) {
+      
     }
 }

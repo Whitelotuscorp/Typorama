@@ -11,6 +11,7 @@ import Foundation
 //MARK: - Delegats funcs
 
 extension IGRPhotoTweakViewController : IGRPhotoTweakViewCustomizationDelegate {
+        
     public func borderColor() -> UIColor {
         return self.customBorderColor()
     }
@@ -45,5 +46,10 @@ extension IGRPhotoTweakViewController : IGRPhotoTweakViewCustomizationDelegate {
     
     public func canvasInsets() -> UIEdgeInsets {
         return self.customCanvasInsets()
+    }
+    
+    public func cropTweakViewDidMove(_ cropView: IGRCropView) {
+        
+        self.customCropTweakViewDidMove(cropView)
     }
 }

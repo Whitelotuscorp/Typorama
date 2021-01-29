@@ -8,11 +8,19 @@
 
 import UIKit
 
+@objc protocol EraserVWDelegate: class {
+    
+    @objc optional func eraser(view: EraserVW, didChangeValue slider: UISlider)
+    @objc optional func eraserUndoLast(view: EraserVW)
+}
+
 class EraserVW: UIView {
+    
+    weak var delegate : EraserVWDelegate?
     
     @IBOutlet var contentView: UIView!
     
-    @IBOutlet weak var lbl_Undo: UILabel!
+    @IBOutlet weak var btn_Undo: UIButton!
     @IBOutlet weak var lbl_Size: UILabel!
     @IBOutlet weak var lbl_Intensity: UILabel!
     
@@ -61,11 +69,21 @@ class EraserVW: UIView {
         self.lbl_Size.font = UIFont(name: APPFONT_Bold, size: APPFONT_Size15)
         self.lbl_Size.textColor = COLOR_Black
         
-        self.lbl_Undo.font = UIFont(name: APPFONT_Bold, size: APPFONT_Size15)
-        self.lbl_Undo.textColor = COLOR_White
-        self.lbl_Undo.backgroundColor = COLOR_GrayD060
-        self.lbl_Undo.clipsToBounds = true
-        self.lbl_Undo.layer.cornerRadius = 5
+        self.btn_Undo.titleLabel!.font = UIFont(name: APPFONT_Bold, size: APPFONT_Size15)
+        self.btn_Undo.titleLabel!.textAlignment = .center
+        self.btn_Undo.titleLabel!.numberOfLines = 0
+        self.btn_Undo.setTitleColor(COLOR_White, for: .normal)
+        self.btn_Undo.backgroundColor = COLOR_GrayD060
+        self.btn_Undo.clipsToBounds = true
+        self.btn_Undo.layer.cornerRadius = 5
+    }
+    @IBAction func action_Undo(_ sender: UIButton) {
+        
+        self.delegate?.eraserUndoLast?(view: self)
+    }
+    @IBAction func action_ChangeSlider(_ slider: UISlider) {
+        
+        self.delegate?.eraser?(view: self, didChangeValue: slider)
     }
 }
 

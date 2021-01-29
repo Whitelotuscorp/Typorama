@@ -8,12 +8,14 @@
 #import <QuartzCore/QuartzCore.h>
 #import "ZDStickerView.h"
 #import "SPGripViewBorderView.h"
+#import "UIImage+Utility.h"
+#import <Posterooh-Swift.h>
 
 
-#define kSPUserResizableViewGlobalInset 5.0
+#define kSPUserResizableViewGlobalInset 3.0
 #define kSPUserResizableViewDefaultMinWidth 48.0
 #define kSPUserResizableViewInteractiveBorderSize 10.0
-#define kZDStickerViewControlSize 36.0
+#define kZDStickerViewControlSize 26.0
 #define kZDStickerViewControlIconSize 22.0
 
 
@@ -248,6 +250,8 @@ static CGAffineTransform transformBeforeScaling;
 
 - (void)setupDefaultAttributes {
     
+    self.undo = [[NSMutableArray alloc] init];
+    
     self.logoID = @"";
     self.borderView = [[SPGripViewBorderView alloc] initWithFrame:CGRectInset(self.bounds, kSPUserResizableViewGlobalInset, kSPUserResizableViewGlobalInset)];
     self.borderView.borderColor = self.borderColor;
@@ -374,9 +378,10 @@ static CGAffineTransform transformBeforeScaling;
     [self.shadowView removeFromSuperview];
     _shadowView = newShadowView;
     
-    self.shadowView.frame = CGRectInset(self.bounds,
-                                        kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
-                                        kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
+    self.shadowView.frame = self.bounds;
+//    self.shadowView.frame = CGRectInset(self.bounds,
+//                                        kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
+//                                        kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
     
     self.shadowView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;    
     [self addSubview:self.shadowView];
@@ -405,9 +410,10 @@ static CGAffineTransform transformBeforeScaling;
     [self.contentView removeFromSuperview];
     _contentView = newContentView;
 
-    self.contentView.frame = CGRectInset(self.bounds,
-                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
-                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
+    self.contentView.frame = self.bounds;
+//    self.contentView.frame = CGRectInset(self.bounds,
+//                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
+//                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
 
     self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 //printf(self.contentView.frame)
@@ -434,9 +440,11 @@ static CGAffineTransform transformBeforeScaling;
 - (void)setFrame:(CGRect)newFrame
 {
     [super setFrame:newFrame];
-    self.contentView.frame = CGRectInset(self.bounds,
-                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
-                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
+    
+    self.contentView.frame = self.bounds;
+//    self.contentView.frame = CGRectInset(self.bounds,
+//                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
+//                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
 
     self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
@@ -452,10 +460,10 @@ static CGAffineTransform transformBeforeScaling;
         }
     }
     
-    
-    self.shadowView.frame = CGRectInset(self.bounds,
-                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
-                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
+    self.shadowView.frame = self.bounds;
+//    self.shadowView.frame = CGRectInset(self.bounds,
+//                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2,
+//                                         kSPUserResizableViewGlobalInset + kSPUserResizableViewInteractiveBorderSize/2);
     
     self.shadowView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
@@ -491,27 +499,38 @@ static CGAffineTransform transformBeforeScaling;
     [self.borderView setNeedsDisplay];
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    if (!self.allowDragging)
-    {
-        return;
-    }
-
-    [self enableTransluceny:YES];
-
-    UITouch *touch = [touches anyObject];
-    self.touchStart = [touch locationInView:self.superview];
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    
     if ([self.stickerViewDelegate respondsToSelector:@selector(stickerViewDidBeginEditing:)])
     {
         [self.stickerViewDelegate stickerViewDidBeginEditing:self];
     }
+    
+    if (!self.allowDragging)
+    {
+        UITouch *touch = [touches anyObject];
+        self.touchStart = [touch locationInView:self];
+        return;
+    }
+    
+    UITouch *touch = [touches anyObject];
+    self.touchStart = [touch locationInView:self.superview];
+
+
+    [self enableTransluceny:YES];
+    
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [self enableTransluceny:NO];
-
+    if (!self.allowDragging)
+    {
+        CGPoint touch = [[touches anyObject] locationInView:self];
+        [self eraseUsingTouchLocation:touch EndEditing:YES];
+        self.touchStart = touch;
+    }
+    
     // Notify the delegate we've ended our editing session.
     if ([self.stickerViewDelegate respondsToSelector:@selector(stickerViewDidEndEditing:)])
     {
@@ -586,26 +605,102 @@ static CGAffineTransform transformBeforeScaling;
     self.center = newCenter;
 }
 
-
-
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
     if (!self.allowDragging)
     {
-        return;
+        CGPoint touch = [[touches anyObject] locationInView:self];
+        [self eraseUsingTouchLocation:touch EndEditing:NO];
+        self.touchStart = touch;
     }
+    else {
+        
+        [self enableTransluceny:YES];
 
-    [self enableTransluceny:YES];
+        CGPoint touchLocation = [[touches anyObject] locationInView:self];
+        if (CGRectContainsPoint(self.resizingControl.frame, touchLocation))
+        {
+            return;
+        }
 
-    CGPoint touchLocation = [[touches anyObject] locationInView:self];
-    if (CGRectContainsPoint(self.resizingControl.frame, touchLocation))
+        CGPoint touch = [[touches anyObject] locationInView:self.superview];
+        [self translateUsingTouchLocation:touch];
+        self.touchStart = touch;
+    }
+}
+
+-(CGRect) updatePathFrom:(CGPoint)start To:(CGPoint)end WithSize:(CGFloat)width {
+    
+    CGSize size = CGSizeMake(end.x - start.x + width*2, end.y - start.y + width*2);
+    return CGRectMake(start.x - width, start.y - width, size.width, size.height);
+}
+
+- (void)eraseUsingTouchLocation:(CGPoint)currentPoint EndEditing:(BOOL)end {
+    
+    infoLayer *info_L = (infoLayer*)self.info;
+    UIImage *img_BG = [info_L getImage];
+    UIImage *img_Main = [info_L getMain];
+    CGFloat sizeP = [info_L getEraserSize];
+    CGFloat intensity = [info_L getEraserIntensity];
+//    UIColor *color = [[info_L getColor] colorWithAlphaComponent:[info_L getEraserIntensity]];
+    
+    CGSize size = img_BG.size;
+    CGRect area_BG = CGRectMake(0, 0, size.width, size.height);
+    
+    UIImageView *imgvw = (UIImageView *)self.contentView;
+    
+    CGFloat ox = (img_BG.size.width * self.touchStart.x) / imgvw.frame.size.width;
+    CGFloat oy = (img_BG.size.height * self.touchStart.y) / imgvw.frame.size.height;
+    
+    CGFloat nx = (img_BG.size.width * currentPoint.x) / imgvw.frame.size.width;;
+    CGFloat ny = (img_BG.size.height * currentPoint.y) / imgvw.frame.size.height;;
+
+    
+    UIGraphicsBeginImageContext(img_BG.size);
+    [img_BG drawInRect:area_BG];
+    
+    // I add this
+    CGContextSetBlendMode(UIGraphicsGetCurrentContext(), kCGBlendModeClear);
+    CGContextSetLineCap(UIGraphicsGetCurrentContext(), kCGLineCapRound);
+    CGContextSetLineWidth(UIGraphicsGetCurrentContext(), sizeP); //size
+    CGContextSetStrokeColorWithColor(UIGraphicsGetCurrentContext(), [[UIColor clearColor] CGColor]);
+    CGContextBeginPath(UIGraphicsGetCurrentContext());
+    
+    CGContextMoveToPoint(UIGraphicsGetCurrentContext(), ox, oy);
+    CGContextAddLineToPoint(UIGraphicsGetCurrentContext(), nx, ny);
+    CGContextStrokePath(UIGraphicsGetCurrentContext());
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+//    UIGraphicsBeginImageContext(img_BG.size);
+//    [img_Main drawInRect:area_BG];
+//    UIImage *imageMain = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsEndImageContext();
+//
+//    CGRect rect = [self updatePathFrom:CGPointMake(ox, oy) To:CGPointMake(nx, ny) WithSize:sizeP];
+//    CGImageRef imageRef = CGImageCreateWithImageInRect([imageMain CGImage], rect);
+//    UIImage *cropImage = [UIImage imageWithCGImage:imageRef];
+//    CGImageRelease(imageRef);
+//
+//    UIGraphicsBeginImageContext(size);
+//    [image drawInRect:area_BG blendMode:kCGBlendModeNormal alpha:1.0];
+//    [cropImage drawInRect:rect blendMode:kCGBlendModeNormal alpha: intensity];
+//    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsEndImageContext();
+    
+    ((UIImageView *)self.contentView).image = image;
+//    [self.contentView setNeedsDisplay];
+    [self setNeedsDisplay];
+    
+    if (end == YES) {
+        
+        [self.undo addObject:image];
+    }
+    
+    if ([self.stickerViewDelegate respondsToSelector:@selector(stickerView:EraseImage:)])
     {
-        return;
+        [self.stickerViewDelegate stickerView:self EraseImage:image];
     }
-
-    CGPoint touch = [[touches anyObject] locationInView:self.superview];
-    [self translateUsingTouchLocation:touch];
-    self.touchStart = touch;
 }
 
 #pragma mark - Property setter and getter
